@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: cs361_db
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: platform
+
+    ports:
+      
+      - "5432:5432"
+
+    volumes:
+    
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+  prisma-studio:
+    image: node:22-alpine
+    container_name: cs361
+    working_dir: /app
+    command: npx prisma studio --port 5555 --browser none
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./server:/app
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/ecommerce
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+    
+      - studio
+
+volumes:
+  postgres_data:
+    driver: local
