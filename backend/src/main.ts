@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { RequestValidationMiddleware } from './common/middlewares';
+import { HttpExceptionFilter } from './common/filters/exception-handler.filter';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -40,6 +42,14 @@ async function bootstrap() {
 
     // Global Prefix (optional - ทุก route จะเริ่มด้วย /api)
     app.setGlobalPrefix('api');
+
+    //Global Middleware
+    app.use(new RequestValidationMiddleware());
+
+    //Error handler filter
+    app.useGlobalFilters(new HttpExceptionFilter());
+
+
 
     const port = configService.get('PORT') || 3000;
     await app.listen(port);
