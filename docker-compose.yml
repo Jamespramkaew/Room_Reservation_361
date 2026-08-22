@@ -18,7 +18,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ecommerce"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d platform"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -35,7 +35,7 @@ services:
     volumes:
       - ./server:/app
     environment:
-      DATABASE_URL: postgresql://postgres:password@db:5432/ecommerce
+      DATABASE_URL: postgresql://postgres:password@db:5432/platform
     depends_on:
       db:
         condition: service_healthy

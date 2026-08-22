@@ -36,17 +36,25 @@ export class PrismaService
   async connectWithRetry(maxRetries = 3, delayMs = 2000): Promise<void> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
+     
         await this.$connect();
+        await this.$queryRaw`SELECT 1`;
+        
         this.logger.log('✅ Database connected successfully');
         return;
       } catch (error) {
         this.logger.error(
           `❌ Database connection attempt ${attempt}/${maxRetries} failed`,
         );
+        this.logger.error(`Error: ${error.message}`);
         
         if (attempt === maxRetries) {
           this.logger.error('Failed to connect to database after all retries');
-          throw error;
+          this.logger.error('**Please check:');
+          this.logger.error('  1. Database server is running');
+          this.logger.error('  2. DATABASE_URL in .env is correct');
+          this.logger.error('  3. Database credentials are valid');
+          process.exit(1);
         }
         
         this.logger.log(`Retrying in ${delayMs / 1000} seconds...`);
