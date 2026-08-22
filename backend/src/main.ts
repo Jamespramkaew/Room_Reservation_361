@@ -32,7 +32,7 @@ async function bootstrap() {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true, // ลบ properties ที่ไม่ได้ define ใน DTO
-        forbidNonWhitelisted: true, // throw error ถ้ามี properties ที่ไม่ได้ define
+        forbidNonWhitelisted: false, // ลบเงียบๆ ไม่ throw error
         transform: true, // แปลง type อัตโนมัติ (เช่น string -> number)
         transformOptions: {
           enableImplicitConversion: true,
