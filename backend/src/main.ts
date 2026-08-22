@@ -43,10 +43,7 @@ async function bootstrap() {
     // Global Prefix (optional - ทุก route จะเริ่มด้วย /api)
     app.setGlobalPrefix('api');
 
-    //Global Middleware
-    app.use(new RequestValidationMiddleware());
-
-    //Error handler filter
+    // Global Exception Filter
     app.useGlobalFilters(new HttpExceptionFilter());
 
 

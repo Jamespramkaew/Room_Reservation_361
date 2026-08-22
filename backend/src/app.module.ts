@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma';
 import { ExampleModule } from './example';
+import { RequestValidationMiddleware } from './common/middlewares';
 
 @Module({
   imports: [
@@ -16,4 +17,8 @@ import { ExampleModule } from './example';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestValidationMiddleware).forRoutes('*');
+  }
+}
