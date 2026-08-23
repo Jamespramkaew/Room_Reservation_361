@@ -84,14 +84,30 @@ async function main() {
   console.log('Creating facilities...');
   // Create Facilities with more variety
   const facilities = await Promise.all([
-    prisma.facilities.create({ data: { name: 'Projector' } }),
-    prisma.facilities.create({ data: { name: 'Whiteboard' } }),
-    prisma.facilities.create({ data: { name: 'Air Conditioner' } }),
-    prisma.facilities.create({ data: { name: 'WiFi' } }),
-    prisma.facilities.create({ data: { name: 'Sound System' } }),
-    prisma.facilities.create({ data: { name: 'Table' } }),
-    prisma.facilities.create({ data: { name: 'Chair' } }),
-    prisma.facilities.create({ data: { name: 'Screen' } }),
+    prisma.facilities.create({ 
+      data: { name: 'Projector' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Whiteboard' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Air Conditioner' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'WiFi' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Sound System' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Table' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Chair' },
+    }),
+    prisma.facilities.create({ 
+      data: { name: 'Screen' },
+    }),
   ]);
 
   const [projector, whiteboard, ac, wifi, soundSystem, table, chair, screen] = facilities;
