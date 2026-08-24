@@ -235,11 +235,11 @@ async function main() {
     {
       user_id: instructor1.id,
       room_id: room1.id,
-      booking_type: 'CLASS',
+      booking_type: 'CLASS' as const,
       title: 'Introduction to Programming',
       start_time: createDateTime(1, 9, 0),
       end_time: createDateTime(1, 11, 0),
-      status: 'APPROVED',
+      status: 'APPROVED' as const,
       remark: 'Regular class session - 50 students expected',
     },
     
@@ -247,11 +247,11 @@ async function main() {
     {
       user_id: student1.id,
       room_id: room2.id,
-      booking_type: 'STUDENT_BOOKING',
+      booking_type: 'STUDENT_BOOKING' as const,
       title: 'Study Group Meeting',
       start_time: createDateTime(2, 14, 0),
       end_time: createDateTime(2, 16, 0),
-      status: 'PENDING',
+      status: 'PENDING' as const,
       remark: 'Group study for midterm exam',
     },
     
@@ -259,11 +259,11 @@ async function main() {
     {
       user_id: instructor1.id,
       room_id: room1.id,
-      booking_type: 'SCHEDULE',
+      booking_type: 'SCHEDULE' as const,
       title: 'Advanced Web Development - Recurring',
       start_time: createDateTime(3, 13, 0),
       end_time: createDateTime(3, 15, 0),
-      status: 'APPROVED',
+      status: 'APPROVED' as const,
       remark: 'First session of recurring schedule',
     },
     
@@ -271,11 +271,11 @@ async function main() {
     {
       user_id: admin.id,
       room_id: room2.id,
-      booking_type: 'SPECIAL_EVENT',
+      booking_type: 'SPECIAL_EVENT' as const,
       title: 'University Seminar - Tech Innovation',
       start_time: createDateTime(7, 10, 0),
       end_time: createDateTime(7, 12, 0),
-      status: 'APPROVED',
+      status: 'APPROVED' as const,
       remark: 'Guest speaker from tech industry',
     },
     
@@ -283,11 +283,11 @@ async function main() {
     {
       user_id: student2.id,
       room_id: room3.id,
-      booking_type: 'STUDENT_BOOKING',
+      booking_type: 'STUDENT_BOOKING' as const,
       title: 'Project Discussion - Too many people',
       start_time: createDateTime(-3, 15, 0),
       end_time: createDateTime(-3, 17, 0),
-      status: 'REJECTED',
+      status: 'REJECTED' as const,
       remark: 'Room capacity exceeded - rejected by admin',
     },
     
@@ -295,11 +295,11 @@ async function main() {
     {
       user_id: student3.id,
       room_id: room1.id,
-      booking_type: 'CLASS',
+      booking_type: 'CLASS' as const,
       title: 'Tutorial Session - Cancelled',
       start_time: createDateTime(-1, 10, 0),
       end_time: createDateTime(-1, 11, 0),
-      status: 'CANCELLED',
+      status: 'CANCELLED' as const,
       cancelled_by: student3.id,
       cancel_reason: 'Class was moved to online format',
       cancelled_at: new Date(),
