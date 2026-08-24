@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma';
 import { ExampleModule } from './example';
+import { RoomPhotosModule} from './room-photos';
 import { RequestValidationMiddleware } from './common/middlewares';
 
 @Module({
@@ -13,6 +14,7 @@ import { RequestValidationMiddleware } from './common/middlewares';
     }),
     PrismaModule,
     ExampleModule,
+    RoomPhotosModule
   ],
   controllers: [AppController],
   providers: [AppService],
