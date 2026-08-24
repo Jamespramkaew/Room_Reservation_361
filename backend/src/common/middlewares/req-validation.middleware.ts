@@ -9,6 +9,11 @@ export class RequestValidationMiddleware implements NestMiddleware {
       return next();
     }
 
+    // ข้ามการตรวจสอบสำหรับ file upload routes (multipart/form-data)
+    if (req.path.includes('/images') || req.path.includes('/upload')) {
+      return next();
+    }
+
     const contentType = req.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
       throw new BadRequestException(

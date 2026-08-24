@@ -1,4 +1,4 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma';
 import { ExampleModule } from './example';
 import { RoomPhotosModule} from './room-photos';
 import { RequestValidationMiddleware } from './common/middlewares';
+import { S3Module } from './s3/s3.module';
 
 @Module({
   imports: [
@@ -14,13 +15,20 @@ import { RequestValidationMiddleware } from './common/middlewares';
     }),
     PrismaModule,
     ExampleModule,
-    RoomPhotosModule
+    RoomPhotosModule,
+    S3Module
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestValidationMiddleware).forRoutes('*');
+    consumer
+      .apply(RequestValidationMiddleware)
+      .exclude(
+        { path: 'rooms/:roomId/images', method: RequestMethod.POST },
+        { path: 'rooms/:roomId/images', method: RequestMethod.PUT }
+      )
+      .forRoutes('*');
   }
 }
