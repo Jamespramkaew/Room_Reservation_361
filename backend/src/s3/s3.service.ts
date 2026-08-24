@@ -11,11 +11,13 @@ export class S3Service {
 
     private readonly s3Client: S3Client;
     private readonly bucketName: string;
+    private readonly region: string;
 
 
     constructor(private readonly configService: ConfigService) {
+        this.region = this.configService.get<string>('AWS_REGION')!;
         this.s3Client = new S3Client({
-            region: this.configService.get<string>('AWS_REGION')!,
+            region: this.region,
             credentials: {
                 accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY_ID')!,
                 secretAccessKey: this.configService.get<string>('AWS_SECRET_ACCESS_KEY')!,
@@ -33,7 +35,8 @@ export class S3Service {
                 Bucket: this.bucketName,
                 Key: key,
                 Body: file.buffer,
-                ContentType: file.mimetype
+                ContentType: file.mimetype,
+                ACL: 'public-read'  // เพิ่ม ACL เพื่อให้ไฟล์เป็น public
             });
 
             await this.s3Client.send(command);
@@ -75,6 +78,6 @@ export class S3Service {
     };
 
     getObjectUrl(key: string): string {
-        return `https://${this.bucketName}.s3.amazonaws.com/${key}`;
+        return `https://${this.bucketName}.s3.${this.region}.amazonaws.com/${key}`;
     };
 }
