@@ -5,9 +5,10 @@ import {
   HttpStatus,
   Param,
   Post,
+  Body,
 } from '@nestjs/common';
 import { FacilitiesService } from './facilities.service';
-import { CreateFacilitiesDto, UpdateFacilitiesDto } from './dto/create-facilities.dto';
+import { CreateFacilitiesDto } from './dto/create-facilities.dto';
 import { ApiResponse } from '../common/interfaces/response.interface';
 import { successResponse } from '../common/utils/response.util';
 

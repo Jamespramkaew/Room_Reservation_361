@@ -17,4 +17,16 @@ export class FacilitiesRepository {
             where: {id},
         });
     }
+
+    async findByName(name: string): Promise<Facilities | null> {
+        return this.prisma.facilities.findUnique({
+            where: { name },
+        });
+    }
+
+    async create(data: Prisma.FacilitiesCreateInput): Promise<Facilities> {
+        return this.prisma.facilities.create({
+            data,
+        });
+    }
 }
