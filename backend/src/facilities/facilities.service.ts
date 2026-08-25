@@ -44,9 +44,9 @@ export class FacilitiesService {
         
         if (dto.name) {
             const existing = await this.repository.findByName(dto.name);
-            if (existing && existing.id !== id) {
-                throw new ConflictException(`Facility with ID "${id}" not found`);
-            }
+            throw new ConflictException(
+                `Facility with name "${dto.name}" already exists. Name must be unique.`,
+            );
         }
 
         return this.repository.update(id, dto);
