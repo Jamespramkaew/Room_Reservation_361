@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
-import { RoomFacilities } from '../../generated/prisma/client';
+import { RoomFacilities, PrismaClient } from '../../generated/prisma/client';
+
+type PrismaTx = Omit<PrismaClient, `$${string}`>;
 
 export interface RoomFacilityUpsertData {
   quantity: number;
@@ -13,8 +15,9 @@ export interface RoomFacilityUpsertData {
 export class RoomFacilityRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByRoomId(roomId: string): Promise<RoomFacilities[]> {
-    return this.prisma.roomFacilities.findMany({
+  async findByRoomId(roomId: string, tx?: PrismaTx): Promise<RoomFacilities[]> {
+    const client = tx ?? this.prisma;
+    return client.roomFacilities.findMany({
       where: { room_id: roomId },
       orderBy: { sort_order: 'asc' },
     });
@@ -24,8 +27,10 @@ export class RoomFacilityRepository {
     roomId: string,
     facilityId: string,
     data: RoomFacilityUpsertData,
+    tx?: PrismaTx,
   ): Promise<RoomFacilities> {
-    return this.prisma.roomFacilities.upsert({
+    const client = tx ?? this.prisma;
+    return client.roomFacilities.upsert({
       where: {
         room_id_facility_id: {
           room_id: roomId,
@@ -44,8 +49,10 @@ export class RoomFacilityRepository {
   async deleteByRoomAndFacility(
     roomId: string,
     facilityId: string,
+    tx?: PrismaTx,
   ): Promise<RoomFacilities> {
-    return this.prisma.roomFacilities.delete({
+    const client = tx ?? this.prisma;
+    return client.roomFacilities.delete({
       where: {
         room_id_facility_id: {
           room_id: roomId,
