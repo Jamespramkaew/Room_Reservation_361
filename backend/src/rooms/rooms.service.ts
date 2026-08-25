@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { RoomRepository } from './rooms.repository';
-import { QueryRoomsDto } from './dto';
+import { FacilityRepository } from './repositories/facility.repository';
+import { RoomFacilityRepository } from './repositories/room-facility.repository';
+import { QueryRoomsDto, CreateRoomDto } from './dto';
 import { Pagination } from '../common/interfaces/response.interface';
 
 export interface RoomImageResponse {
@@ -23,6 +30,7 @@ export interface RoomFacilityResponse {
   broken_quantity: number;
   sort_order: number;
   note: string | null;
+  status: string;
 }
 
 export interface RoomResponse {
@@ -56,7 +64,77 @@ export interface RoomListResult {
 
 @Injectable()
 export class RoomService {
-  constructor(private readonly roomRepo: RoomRepository) {}
+  constructor(
+    private readonly roomRepo: RoomRepository,
+    private readonly facilityRepo: FacilityRepository,
+    private readonly roomFacilityRepo: RoomFacilityRepository,
+  ) {}
+
+  async createRoom(dto: CreateRoomDto): Promise<RoomDetailResponse> {
+    await this._ensureNameUnique(dto.room_name);
+
+    if (dto.facilities && dto.facilities.length > 0) {
+      await this._ensureFacilityExists(
+        dto.facilities.map((f) => f.facilityId),
+      );
+
+      for (const f of dto.facilities) {
+        this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+      }
+    }
+
+    const room = await this.roomRepo.create({
+      room_name: dto.room_name,
+      seat_capacity: dto.capacity,
+      status: dto.status,
+      size: dto.size,
+      description: dto.description ?? null,
+    });
+
+    if (dto.facilities && dto.facilities.length > 0) {
+      for (const f of dto.facilities) {
+        await this.roomFacilityRepo.upsert(room.id, f.facilityId, {
+          quantity: f.quantity,
+          broken_quantity: f.broken_quantity ?? 0,
+          sort_order: f.sort_order,
+          note: f.note ?? null,
+        });
+      }
+    }
+
+    const created = await this.roomRepo.findDetailById(room.id);
+    return this.mapToDetailResponse(created);
+  }
+
+  private async _ensureNameUnique(
+    name: string,
+    excludeId?: string,
+  ): Promise<void> {
+    const existing = await this.roomRepo.findByName(name, excludeId);
+    if (existing) {
+      throw new ConflictException(`Room '${name}' already exists.`);
+    }
+  }
+
+  private async _ensureFacilityExists(facilityIds: string[]): Promise<void> {
+    const found = await this.facilityRepo.findManyByIds(facilityIds);
+    if (found.length !== facilityIds.length) {
+      const foundIds = found.map((f) => f.id);
+      const missing = facilityIds.find((id) => !foundIds.includes(id));
+      throw new NotFoundException(`Facility '${missing}' not found.`);
+    }
+  }
+
+  private _ensureBrokenNotExceedTotal(
+    quantity: number,
+    brokenQuantity: number,
+  ): void {
+    if (brokenQuantity > quantity) {
+      throw new BadRequestException(
+        `broken_quantity (${brokenQuantity}) cannot exceed quantity (${quantity}).`,
+      );
+    }
+  }
 
   async getRoomList(filters: QueryRoomsDto): Promise<RoomListResult> {
     const page = filters.page ?? 1;
@@ -121,6 +199,7 @@ export class RoomService {
         broken_quantity: rf.broken_quantity ?? 0,
         sort_order: rf.sort_order,
         note: rf.note ?? null,
+        status: this._deriveFacilityStatus(rf.quantity, rf.broken_quantity ?? 0),
       })),
       roomImages: room.room_photos.map((photo: any) => ({
         id: photo.id,
@@ -129,6 +208,12 @@ export class RoomService {
         display_order: photo.sort_order,
       })),
     };
+  }
+
+  private _deriveFacilityStatus(quantity: number, brokenQuantity: number): string {
+    if (brokenQuantity === 0) return 'AVAILABLE';
+    if (brokenQuantity >= quantity) return 'UNAVAILABLE';
+    return 'PARTIALLY_AVAILABLE';
   }
 
   private mapToResponse(room: any): RoomResponse {
