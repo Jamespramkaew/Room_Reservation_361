@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, Post, Patch, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Patch, Delete, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { RoomService } from './rooms.service';
 import { QueryRoomsDto, CreateRoomDto, UpdateRoomDto } from './dto';
 import { ApiResponse } from '../common/interfaces/response.interface';
@@ -42,5 +42,13 @@ export class RoomsController {
   ): Promise<ApiResponse<RoomDetailResponse>> {
     const data = await this.roomService.updateRoom(roomId, body);
     return successResponse(data, 'Room updated successfully.');
+  }
+
+  @Delete(':roomId')
+  async deleteRoom(
+    @Param('roomId') roomId: string,
+  ): Promise<ApiResponse<{ id: string; deleted_at: Date }>> {
+    const data = await this.roomService.deleteRoom(roomId);
+    return successResponse(data, 'Room deleted successfully.');
   }
 }
