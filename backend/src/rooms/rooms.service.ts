@@ -124,7 +124,7 @@ export class RoomService {
       })),
       roomImages: room.room_photos.map((photo: any) => ({
         id: photo.id,
-        image_url: photo.object_key,
+        image_url: `${process.env.S3_PUBLIC_URL}/${photo.object_key}`,
         is_primary: photo.sort_order === 1,
         display_order: photo.sort_order,
       })),
@@ -144,7 +144,7 @@ export class RoomService {
         (rf: any) => rf.facility.name.toUpperCase(),
       ),
       roomImages: room.room_photos.map((photo: any) => ({
-        image_url: photo.object_key,
+        image_url: `${process.env.S3_PUBLIC_URL}/${photo.object_key}`,
         is_primary: photo.sort_order === 1,
         display_order: photo.sort_order,
       })),
