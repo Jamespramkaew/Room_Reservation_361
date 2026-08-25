@@ -36,7 +36,7 @@ export class S3Service {
                 Key: key,
                 Body: file.buffer,
                 ContentType: file.mimetype,
-                ACL: 'public-read'  // เพิ่ม ACL เพื่อให้ไฟล์เป็น public
+                // ใช้ Bucket Policy แทน ACL เพื่อจัดการ public access
             });
 
             await this.s3Client.send(command);
