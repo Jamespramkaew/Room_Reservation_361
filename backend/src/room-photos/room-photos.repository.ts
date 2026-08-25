@@ -47,22 +47,24 @@ export class RoomPhotosRepository {
         });
     };
 
-    async deleteRoomPhoto(roomPhotoId: string): Promise<RoomPhotos> {
-        return this.prisma.roomPhotos.delete({
-            where: { id: roomPhotoId }
-        });
-    };
 
-    async updateSortOrder(roomId: string, currentSortedOrder: number) {
-        return this.prisma.roomPhotos.updateMany({
-            where: {
-                room_id: roomId,
-                sort_order: { gt: currentSortedOrder }
-            },
-            data: {
-                sort_order: { increment: -1 }
-            },
-        });
-    };
+    async deleteRoomPhotoAndUpdateSortOrders(roomId: string, roomPhotoId: string, currentSortedOrder: number) {
+        const [deleteResult, sortedOrderResult] = await this.prisma.$transaction([
 
+            this.prisma.roomPhotos.delete({
+                where: { id: roomPhotoId }
+            }),
+
+            this.prisma.roomPhotos.updateMany({
+                where: {
+                    room_id: roomId,
+                    sort_order: { gt: currentSortedOrder }
+                },
+                data: {
+                    sort_order: { increment: -1 }
+                },
+            }),
+        ]);
+        return {...deleteResult, ...sortedOrderResult};
+    };
 };

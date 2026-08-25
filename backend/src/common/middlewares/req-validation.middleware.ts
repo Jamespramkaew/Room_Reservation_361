@@ -10,7 +10,7 @@ export class RequestValidationMiddleware implements NestMiddleware {
     }
 
     // ข้ามการตรวจสอบสำหรับ file upload routes (multipart/form-data)
-    if (req.path.includes('/images') || req.path.includes('/upload')) {
+    if (req.path.includes('/upload')) {
       return next();
     }
 

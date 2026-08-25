@@ -6,7 +6,7 @@ import { RoomPhotosService } from './room-photos.service';
 import { S3Service } from 'src/s3/s3.service';
 import { AddRoomPhotoRequestDto, UpdateRoomPhotoRequestDto } from './room-photo.dto';
 
-@Controller('rooms/:roomId/images')
+@Controller('rooms/:roomId/photos')
 export class RoomPhotosController {
     constructor(
         private readonly service: RoomPhotosService,
@@ -56,10 +56,10 @@ export class RoomPhotosController {
         };
     };
 
-    @Patch(':roomPhotoId')
+    @Patch(':photoId')
     async updateRoomPhoto(
         @Param('roomId') roomId: string,
-        @Param('roomPhotoId') roomPhotoId: string,
+        @Param('photoId') roomPhotoId: string,
         @Body() body: UpdateRoomPhotoRequestDto
     ) {
         if (!body.caption && !body.sortOrder)
@@ -75,12 +75,12 @@ export class RoomPhotosController {
     }
 
 
-    @Delete(':roomPhotoId')
+    @Delete(':photoId')
     async deleteRoomPhoto(
         @Param('roomId') roomId: string,
-        @Param('roomPhotoId') roomPhotoId: string
+        @Param('photoId') photoId: string
     ) {
-        const data = await this.service.deleteRoomPhoto(roomId, roomPhotoId);
+        const data = await this.service.deleteRoomPhoto(roomId, photoId);
         return successResponse(data, "Room photo deleted successfully");
     };
 

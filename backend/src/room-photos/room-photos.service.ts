@@ -84,10 +84,8 @@ export class RoomPhotosService {
         if (!roomPhoto) throw new NotFoundException("Room photo not found.");
 
         const currentRoomSortedOrder = roomPhoto.sort_order;
-
         await this.s3Service.deleteFile(roomPhoto.object_key);
-        const result = await this.roomPhotosRepo.deleteRoomPhoto(roomPhotoId);
-        await this.roomPhotosRepo.updateSortOrder(roomId, currentRoomSortedOrder);
+        const result = await this.roomPhotosRepo.deleteRoomPhotoAndUpdateSortOrders(roomId,roomPhotoId,currentRoomSortedOrder);
 
         return result;
     };

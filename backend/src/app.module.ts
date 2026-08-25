@@ -26,8 +26,8 @@ export class AppModule implements NestModule {
     consumer
       .apply(RequestValidationMiddleware)
       .exclude(
-        { path: 'rooms/:roomId/images', method: RequestMethod.POST },
-        { path: 'rooms/:roomId/images', method: RequestMethod.PUT }
+        { path: 'rooms/:roomId/photos', method: RequestMethod.POST },
+        { path: 'rooms/:roomId/photos', method: RequestMethod.PUT }
       )
       .forRoutes('*');
   }
