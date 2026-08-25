@@ -7,6 +7,7 @@ import { ExampleModule } from './example';
 import { RoomPhotosModule} from './room-photos';
 import { RequestValidationMiddleware } from './common/middlewares';
 import { S3Module } from './s3/s3.module';
+import { FacilitiesModule } from './facilities/facilities.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { S3Module } from './s3/s3.module';
     PrismaModule,
     ExampleModule,
     RoomPhotosModule,
-    S3Module
+    S3Module,
+    FacilitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
