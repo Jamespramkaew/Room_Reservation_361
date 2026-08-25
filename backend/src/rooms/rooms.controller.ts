@@ -1,9 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, Param } from '@nestjs/common';
 import { RoomService } from './rooms.service';
 import { QueryRoomsDto } from './dto';
 import { ApiResponse } from '../common/interfaces/response.interface';
 import { successResponse } from '../common/utils/response.util';
-import { RoomResponse } from './rooms.service';
+import { RoomResponse, RoomDetailResponse } from './rooms.service';
 
 @Controller('rooms')
 export class RoomsController {
@@ -16,5 +16,13 @@ export class RoomsController {
     const { data, pagination } = await this.roomService.getRoomList(query);
     const response = successResponse(data, 'Rooms fetched successfully.');
     return { ...response, pagination };
+  }
+
+  @Get(':roomId')
+  async getRoomById(
+    @Param('roomId') roomId: string,
+  ): Promise<ApiResponse<RoomDetailResponse>> {
+    const data = await this.roomService.getRoomDetail(roomId);
+    return successResponse(data, 'Room fetched successfully.');
   }
 }
