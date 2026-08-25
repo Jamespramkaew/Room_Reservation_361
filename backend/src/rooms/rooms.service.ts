@@ -7,7 +7,7 @@ import {
 import { RoomRepository } from './rooms.repository';
 import { FacilityRepository } from './repositories/facility.repository';
 import { RoomFacilityRepository } from './repositories/room-facility.repository';
-import { QueryRoomsDto, CreateRoomDto } from './dto';
+import { QueryRoomsDto, CreateRoomDto, UpdateRoomDto } from './dto';
 import { Pagination } from '../common/interfaces/response.interface';
 
 export interface RoomImageResponse {
@@ -55,6 +55,7 @@ export interface RoomDetailResponse {
   description: string | null;
   facilities: RoomFacilityResponse[];
   roomImages: RoomImageDetailResponse[];
+  updatedAt?: string;
 }
 
 export interface RoomListResult {
@@ -69,6 +70,51 @@ export class RoomService {
     private readonly facilityRepo: FacilityRepository,
     private readonly roomFacilityRepo: RoomFacilityRepository,
   ) {}
+
+  async updateRoom(
+    roomId: string,
+    dto: UpdateRoomDto,
+  ): Promise<RoomDetailResponse> {
+    const existing = await this.roomRepo.findDetailById(roomId);
+    if (!existing) {
+      throw new NotFoundException('Room not found.');
+    }
+
+    if (dto.room_name) {
+      await this._ensureNameUnique(dto.room_name, roomId);
+    }
+
+    if (dto.facilities && dto.facilities.length > 0) {
+      await this._ensureFacilityExists(
+        dto.facilities.map((f) => f.facilityId),
+      );
+      for (const f of dto.facilities) {
+        this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+      }
+    }
+
+    await this.roomRepo.update(roomId, {
+      ...(dto.room_name && { room_name: dto.room_name }),
+      ...(dto.capacity && { seat_capacity: dto.capacity }),
+      ...(dto.status && { status: dto.status }),
+      ...(dto.size && { size: dto.size }),
+      ...(dto.description !== undefined && { description: dto.description }),
+    });
+
+    if (dto.facilities && dto.facilities.length > 0) {
+      for (const f of dto.facilities) {
+        await this.roomFacilityRepo.upsert(roomId, f.facilityId, {
+          quantity: f.quantity,
+          broken_quantity: f.broken_quantity ?? 0,
+          sort_order: f.sort_order,
+          note: f.note ?? null,
+        });
+      }
+    }
+
+    const updated = await this.roomRepo.findDetailById(roomId);
+    return this.mapToDetailResponse(updated, true);
+  }
 
   async createRoom(dto: CreateRoomDto): Promise<RoomDetailResponse> {
     await this._ensureNameUnique(dto.room_name);
@@ -183,7 +229,7 @@ export class RoomService {
     return this.mapToDetailResponse(room);
   }
 
-  private mapToDetailResponse(room: any): RoomDetailResponse {
+  private mapToDetailResponse(room: any, includeUpdatedAt = false): RoomDetailResponse {
     return {
       id: room.id,
       room_name: room.room_name,
@@ -207,6 +253,7 @@ export class RoomService {
         is_primary: photo.sort_order === 1,
         display_order: photo.sort_order,
       })),
+      ...(includeUpdatedAt && { updatedAt: room.updated_at?.toISOString() }),
     };
   }
 
