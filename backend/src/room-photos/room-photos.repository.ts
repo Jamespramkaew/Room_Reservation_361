@@ -57,7 +57,7 @@ export class RoomPhotosRepository {
         return this.prisma.roomPhotos.updateMany({
             where: {
                 room_id: roomId,
-                sort_order:{gt: currentSortedOrder}
+                sort_order: { gt: currentSortedOrder }
             },
             data: {
                 sort_order: { increment: -1 }

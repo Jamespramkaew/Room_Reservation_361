@@ -85,6 +85,7 @@ export class RoomPhotosService {
 
         const currentRoomSortedOrder = roomPhoto.sort_order;
 
+        await this.s3Service.deleteFile(roomPhoto.object_key);
         const result = await this.roomPhotosRepo.deleteRoomPhoto(roomPhotoId);
         await this.roomPhotosRepo.updateSortOrder(roomId, currentRoomSortedOrder);
 
