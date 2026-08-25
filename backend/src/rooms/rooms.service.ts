@@ -148,7 +148,7 @@ export class RoomService {
   async createRoom(dto: CreateRoomDto): Promise<RoomDetailResponse> {
     await this._ensureNameUnique(dto.room_name);
 
-    if (dto.facilities && dto.facilities.length > 0) {
+    if (dto.facilities !== undefined && dto.facilities.length > 0) {
       await this._ensureFacilityExists(
         dto.facilities.map((f) => f.facilityId),
       );
@@ -166,7 +166,7 @@ export class RoomService {
       description: dto.description ?? null,
     });
 
-    if (dto.facilities && dto.facilities.length > 0) {
+    if (dto.facilities !== undefined) {
       for (const f of dto.facilities) {
         await this.roomFacilityRepo.upsert(room.id, f.facilityId, {
           quantity: f.quantity,
