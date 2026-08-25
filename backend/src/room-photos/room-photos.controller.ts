@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UploadedFile, UseInterceptors, HttpCode, HttpStatus, BadRequestException, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UploadedFile, UseInterceptors, HttpCode, HttpStatus, BadRequestException, Patch, Delete } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiResponse } from 'src/common/interfaces/response.interface';
 import { successResponse } from 'src/common/utils/response.util';
@@ -62,15 +62,26 @@ export class RoomPhotosController {
         @Param('roomPhotoId') roomPhotoId: string,
         @Body() body: UpdateRoomPhotoRequestDto
     ) {
-        if(!body.caption && !body.sortOrder)
+        if (!body.caption && !body.sortOrder)
             throw new BadRequestException('At least one field must be provided for update')
 
         const data = await this.service.updateRoomPhoto(
             roomId,
             roomPhotoId,
-            body.sortOrder? body.sortOrder : undefined,
-            body.caption? body.caption : undefined
+            body.sortOrder ? body.sortOrder : undefined,
+            body.caption ? body.caption : undefined
         );
         return successResponse(data, "Room photo updated successfully");
     }
+
+
+    @Delete(':roomPhotoId')
+    async deleteRoomPhoto(
+        @Param('roomId') roomId: string,
+        @Param('roomPhotoId') roomPhotoId: string
+    ) {
+        const data = await this.service.deleteRoomPhoto(roomId, roomPhotoId);
+        return successResponse(data, "Room photo deleted successfully");
+    };
+
 };

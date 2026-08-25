@@ -75,6 +75,22 @@ export class RoomPhotosService {
         return result;
     };
 
+    async deleteRoomPhoto(roomId: string, roomPhotoId: string): Promise<RoomPhotos> {
+
+        const room = await this.prismaRepo.findById('room', roomId)
+        if (!room) throw new NotFoundException("Room not found.");
+
+        const roomPhoto = await this.prismaRepo.findById('roomPhotos', roomPhotoId) as RoomPhotos;
+        if (!roomPhoto) throw new NotFoundException("Room photo not found.");
+
+        const currentRoomSortedOrder = roomPhoto.sort_order;
+
+        const result = await this.roomPhotosRepo.deleteRoomPhoto(roomPhotoId);
+        await this.roomPhotosRepo.updateSortOrder(roomId, currentRoomSortedOrder);
+
+        return result;
+    };
+
 
 
 };
