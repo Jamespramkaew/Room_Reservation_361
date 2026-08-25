@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma';
-import { Room, RoomStatus, RoomSize, Prisma } from '../generated/prisma/client';
+import { Room, RoomStatus, RoomSize, Prisma, PrismaClient } from '../generated/prisma/client';
+
+type PrismaTx = Omit<PrismaClient, `$${string}`>;
 
 export interface RoomFindManyArgs {
   search?: string;
@@ -63,6 +65,55 @@ export class RoomRepository {
     const where = this.buildWhereClause(args);
 
     return this.prisma.room.count({ where });
+  }
+
+  async create(
+    data: {
+      room_name: string;
+      seat_capacity: number;
+      status: RoomStatus;
+      size: RoomSize;
+      description: string | null;
+    },
+    tx?: PrismaTx,
+  ): Promise<Room> {
+    const client = tx ?? this.prisma;
+    return client.room.create({ data });
+  }
+
+  async update(
+    roomId: string,
+    data: {
+      room_name?: string;
+      seat_capacity?: number;
+      status?: RoomStatus;
+      size?: RoomSize;
+      description?: string | null;
+    },
+    tx?: PrismaTx,
+  ): Promise<Room> {
+    const client = tx ?? this.prisma;
+    return client.room.update({
+      where: { id: roomId },
+      data,
+    });
+  }
+
+  async softDelete(roomId: string): Promise<Room> {
+    return this.prisma.room.update({
+      where: { id: roomId },
+      data: { deleted_at: new Date() },
+    });
+  }
+
+  async hasActiveBookings(roomId: string): Promise<boolean> {
+    const count = await this.prisma.booking.count({
+      where: {
+        room_id: roomId,
+        status: { in: ['PENDING', 'APPROVED'] },
+      },
+    });
+    return count > 0;
   }
 
   async findByName(name: string, excludeId?: string): Promise<Room | null> {
