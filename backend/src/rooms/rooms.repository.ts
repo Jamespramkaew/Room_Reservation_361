@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma';
-import { Room, RoomStatus, Prisma } from '../generated/prisma/client';
+import { Room, RoomStatus, RoomSize, Prisma } from '../generated/prisma/client';
 
 export interface RoomFindManyArgs {
   search?: string;
   status?: RoomStatus;
+  size?: RoomSize;
   capacity?: number;
+  facilities?: string[];
   skip?: number;
   take?: number;
 }
@@ -116,9 +118,7 @@ export class RoomRepository {
     });
   }
 
-  private buildWhereClause(
-    args: RoomFindManyArgs,
-  ): Prisma.RoomWhereInput {
+  private buildWhereClause(args: RoomFindManyArgs): Prisma.RoomWhereInput {
     const where: Prisma.RoomWhereInput = {
       deleted_at: null,
     };
@@ -134,10 +134,26 @@ export class RoomRepository {
       where.status = args.status;
     }
 
+    if (args.size) {
+      where.size = args.size;
+    }
+
     if (args.capacity) {
       where.seat_capacity = {
         gte: args.capacity,
       };
+    }
+
+    if (args.facilities?.length) {
+      where.AND = args.facilities.map((name) => ({
+        room_facilities: {
+          some: {
+            facility: {
+              name: { equals: name, mode: 'insensitive' },
+            },
+          },
+        },
+      }));
     }
 
     return where;
