@@ -21,7 +21,7 @@ export class FacilitiesRepository {
 
     async findByName(name: string): Promise<Facilities | null> {
         return this.prisma.facilities.findUnique({
-            where: { name, deleted_at: null },
+            where: { name },
         });
     }
 
