@@ -8,19 +8,20 @@ export class FacilitiesRepository {
 
     async findAll(): Promise<Facilities[]> {
         return this.prisma.facilities.findMany({
+            where: { deleted_at: null },
             orderBy: { name: 'asc' },
         });
     }
 
     async findById(id: string): Promise<Facilities | null> {
         return this.prisma.facilities.findUnique({
-            where: {id},
+            where: {id, deleted_at: null },
         });
     }
 
     async findByName(name: string): Promise<Facilities | null> {
         return this.prisma.facilities.findUnique({
-            where: { name },
+            where: { name, deleted_at: null },
         });
     }
 
