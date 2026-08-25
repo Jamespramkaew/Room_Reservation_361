@@ -75,13 +75,39 @@ export class RoomRepository {
   async findDetailById(roomId: string): Promise<Room | null> {
     return this.prisma.room.findUnique({
       where: { id: roomId },
-      include: {
+      select: {
+        id: true,
+        room_name: true,
+        description: true,
+        seat_capacity: true,
+        status: true,
+        size: true,
+        deleted_at: true,
+        created_at: true,
+        updated_at: true,
         room_facilities: {
-          include: {
-            facility: true,
+          select: {
+            facility_id: true,
+            quantity: true,
+            broken_quantity: true,
+            sort_order: true,
+            note: true,
+            facility: {
+              select: {
+                name: true,
+              },
+            },
+          },
+          orderBy: {
+            sort_order: 'asc',
           },
         },
         room_photos: {
+          select: {
+            id: true,
+            object_key: true,
+            sort_order: true,
+          },
           orderBy: {
             sort_order: 'asc',
           },
