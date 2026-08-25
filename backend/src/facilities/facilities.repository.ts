@@ -37,4 +37,11 @@ export class FacilitiesRepository {
             data,
         });
     }
+
+    async softDelete(id: string): Promise<Facilities> {
+        return this.prisma.facilities.update({
+            where: { id },
+            data: { deleted_at: new Date() },
+        });
+    }
 }

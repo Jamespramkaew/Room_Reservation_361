@@ -51,4 +51,10 @@ export class FacilitiesService {
 
         return this.repository.update(id, dto);
     }
+
+    async delete(id: string): Promise<void> {
+        await this.findById(id);
+        await this.repository.softDelete(id);
+    }
+
 }

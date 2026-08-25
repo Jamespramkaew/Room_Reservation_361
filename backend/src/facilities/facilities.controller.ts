@@ -7,6 +7,7 @@ import {
   Post,
   Patch,
   Body,
+  Delete,
 } from '@nestjs/common';
 import { FacilitiesService } from './facilities.service';
 import { CreateFacilitiesDto } from './dto/create-facilities.dto';
@@ -41,6 +42,12 @@ export class FacilitiesController {
     async update( @Param('id') id: string, @Body() dto: UpdateFacilitiesDto): Promise<ApiResponse<any>> {
         const data = await this.facilitiesService.update(id, dto);
         return successResponse(data, 'Facility updated successfully');
+    }
+
+    @Delete(':id')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async delete(@Param('id') id: string): Promise<void> {
+        await this.facilitiesService.delete(id);
     }
 
 }
