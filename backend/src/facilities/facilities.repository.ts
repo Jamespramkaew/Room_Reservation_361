@@ -8,13 +8,14 @@ export class FacilitiesRepository {
 
     async findAll(): Promise<Facilities[]> {
         return this.prisma.facilities.findMany({
+            where: { deleted_at: null },
             orderBy: { name: 'asc' },
         });
     }
 
     async findById(id: string): Promise<Facilities | null> {
         return this.prisma.facilities.findUnique({
-            where: {id},
+            where: {id, deleted_at: null },
         });
     }
 
@@ -34,6 +35,13 @@ export class FacilitiesRepository {
         return this.prisma.facilities.update({
             where: { id },
             data,
+        });
+    }
+
+    async softDelete(id: string): Promise<Facilities> {
+        return this.prisma.facilities.update({
+            where: { id },
+            data: { deleted_at: new Date() },
         });
     }
 }

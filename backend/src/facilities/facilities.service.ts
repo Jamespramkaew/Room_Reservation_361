@@ -43,12 +43,22 @@ export class FacilitiesService {
         await this.findById(id);
         
         if (dto.name) {
-            const existing = await this.repository.findByName(dto.name);
-            if (existing && existing.id !== id) {
-                throw new ConflictException(`Facility with ID "${id}" not found`);
-            }
-        }
+        const existing = await this.repository.findByName(dto.name);
+        
+        if (existing && existing.id !== id) {
+            throw new ConflictException(
+            `Facility with name "${dto.name}" already exists. Name must be unique.`,
+        );
+    }
+}
+
 
         return this.repository.update(id, dto);
     }
+
+    async delete(id: string): Promise<Facilities> {
+        await this.findById(id);
+        return this.repository.softDelete(id);
+    }
+
 }
