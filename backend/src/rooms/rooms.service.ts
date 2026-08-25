@@ -1,6 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { RoomRepository } from './rooms.repository';
-import { QueryRoomsDto } from './dto';
+import { FacilityRepository } from './repositories/facility.repository';
+import { RoomFacilityRepository } from './repositories/room-facility.repository';
+import { PrismaService } from '../prisma';
+import { QueryRoomsDto, CreateRoomDto, UpdateRoomDto } from './dto';
 import { Pagination } from '../common/interfaces/response.interface';
 
 export interface RoomImageResponse {
@@ -23,6 +31,7 @@ export interface RoomFacilityResponse {
   broken_quantity: number;
   sort_order: number;
   note: string | null;
+  status: string;
 }
 
 export interface RoomResponse {
@@ -47,6 +56,7 @@ export interface RoomDetailResponse {
   description: string | null;
   facilities: RoomFacilityResponse[];
   roomImages: RoomImageDetailResponse[];
+  updatedAt?: string;
 }
 
 export interface RoomListResult {
@@ -56,7 +66,174 @@ export interface RoomListResult {
 
 @Injectable()
 export class RoomService {
-  constructor(private readonly roomRepo: RoomRepository) {}
+  constructor(
+    private readonly roomRepo: RoomRepository,
+    private readonly facilityRepo: FacilityRepository,
+    private readonly roomFacilityRepo: RoomFacilityRepository,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async deleteRoom(roomId: string): Promise<{ id: string; deleted_at: Date }> {
+    const existing = await this.roomRepo.findDetailById(roomId);
+    if (!existing) {
+      throw new NotFoundException('Room not found.');
+    }
+
+    const hasBookings = await this.roomRepo.hasActiveBookings(roomId);
+    if (hasBookings) {
+      throw new ConflictException(
+        'Cannot delete room because it is referenced by reservations.',
+      );
+    }
+
+    const deleted = await this.roomRepo.softDelete(roomId);
+    return { id: deleted.id, deleted_at: deleted.deleted_at as Date };
+  }
+
+  async updateRoom(
+    roomId: string,
+    dto: UpdateRoomDto,
+  ): Promise<RoomDetailResponse> {
+    const existing = await this.roomRepo.findDetailById(roomId);
+    if (!existing) {
+      throw new NotFoundException('Room not found.');
+    }
+
+    if (dto.room_name) {
+      await this._ensureNameUnique(dto.room_name, roomId);
+    }
+
+    if (dto.facilities !== undefined) {
+      if (dto.facilities.length > 0) {
+        await this._ensureFacilityExists(
+          dto.facilities.map((f) => f.facilityId),
+        );
+        for (const f of dto.facilities) {
+          this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+        }
+      }
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await this.roomRepo.update(
+        roomId,
+        {
+          ...(dto.room_name && { room_name: dto.room_name }),
+          ...(dto.capacity && { seat_capacity: dto.capacity }),
+          ...(dto.status && { status: dto.status }),
+          ...(dto.size && { size: dto.size }),
+          ...(dto.description !== undefined && { description: dto.description }),
+        },
+        tx,
+      );
+
+      if (dto.facilities !== undefined) {
+        const existingFacilities = await this.roomFacilityRepo.findByRoomId(roomId, tx);
+        const incomingIds = dto.facilities.map((f) => f.facilityId);
+        const toDelete = existingFacilities.filter(
+          (rf) => !incomingIds.includes(rf.facility_id),
+        );
+
+        for (const rf of toDelete) {
+          await this.roomFacilityRepo.deleteByRoomAndFacility(roomId, rf.facility_id, tx);
+        }
+
+        for (const f of dto.facilities) {
+          await this.roomFacilityRepo.upsert(
+            roomId,
+            f.facilityId,
+            {
+              quantity: f.quantity,
+              broken_quantity: f.broken_quantity ?? 0,
+              sort_order: f.sort_order,
+              note: f.note ?? null,
+            },
+            tx,
+          );
+        }
+      }
+    });
+
+    const updated = await this.roomRepo.findDetailById(roomId);
+    return this.mapToDetailResponse(updated, true);
+  }
+
+  async createRoom(dto: CreateRoomDto): Promise<RoomDetailResponse> {
+    await this._ensureNameUnique(dto.room_name);
+
+    if (dto.facilities !== undefined && dto.facilities.length > 0) {
+      await this._ensureFacilityExists(
+        dto.facilities.map((f) => f.facilityId),
+      );
+      for (const f of dto.facilities) {
+        this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+      }
+    }
+
+    const room = await this.prisma.$transaction(async (tx) => {
+      const created = await this.roomRepo.create(
+        {
+          room_name: dto.room_name,
+          seat_capacity: dto.capacity,
+          status: dto.status,
+          size: dto.size,
+          description: dto.description ?? null,
+        },
+        tx,
+      );
+
+      if (dto.facilities !== undefined) {
+        for (const f of dto.facilities) {
+          await this.roomFacilityRepo.upsert(
+            created.id,
+            f.facilityId,
+            {
+              quantity: f.quantity,
+              broken_quantity: f.broken_quantity ?? 0,
+              sort_order: f.sort_order,
+              note: f.note ?? null,
+            },
+            tx,
+          );
+        }
+      }
+
+      return created;
+    });
+
+    const created = await this.roomRepo.findDetailById(room.id);
+    return this.mapToDetailResponse(created);
+  }
+
+  private async _ensureNameUnique(
+    name: string,
+    excludeId?: string,
+  ): Promise<void> {
+    const existing = await this.roomRepo.findByName(name, excludeId);
+    if (existing) {
+      throw new ConflictException(`Room '${name}' already exists.`);
+    }
+  }
+
+  private async _ensureFacilityExists(facilityIds: string[]): Promise<void> {
+    const found = await this.facilityRepo.findManyByIds(facilityIds);
+    if (found.length !== facilityIds.length) {
+      const foundIds = found.map((f) => f.id);
+      const missing = facilityIds.find((id) => !foundIds.includes(id));
+      throw new NotFoundException(`Facility '${missing}' not found.`);
+    }
+  }
+
+  private _ensureBrokenNotExceedTotal(
+    quantity: number,
+    brokenQuantity: number,
+  ): void {
+    if (brokenQuantity > quantity) {
+      throw new BadRequestException(
+        `broken_quantity (${brokenQuantity}) cannot exceed quantity (${quantity}).`,
+      );
+    }
+  }
 
   async getRoomList(filters: QueryRoomsDto): Promise<RoomListResult> {
     const page = filters.page ?? 1;
@@ -105,7 +282,7 @@ export class RoomService {
     return this.mapToDetailResponse(room);
   }
 
-  private mapToDetailResponse(room: any): RoomDetailResponse {
+  private mapToDetailResponse(room: any, includeUpdatedAt = false): RoomDetailResponse {
     return {
       id: room.id,
       room_name: room.room_name,
@@ -121,6 +298,7 @@ export class RoomService {
         broken_quantity: rf.broken_quantity ?? 0,
         sort_order: rf.sort_order,
         note: rf.note ?? null,
+        status: this._deriveFacilityStatus(rf.quantity, rf.broken_quantity ?? 0),
       })),
       roomImages: room.room_photos.map((photo: any) => ({
         id: photo.id,
@@ -128,7 +306,14 @@ export class RoomService {
         is_primary: photo.sort_order === 1,
         display_order: photo.sort_order,
       })),
+      ...(includeUpdatedAt && { updatedAt: room.updated_at?.toISOString() }),
     };
+  }
+
+  private _deriveFacilityStatus(quantity: number, brokenQuantity: number): string {
+    if (brokenQuantity === 0) return 'AVAILABLE';
+    if (brokenQuantity >= quantity) return 'UNAVAILABLE';
+    return 'PARTIALLY_AVAILABLE';
   }
 
   private mapToResponse(room: any): RoomResponse {
