@@ -65,6 +65,16 @@ export class RoomRepository {
     return this.prisma.room.count({ where });
   }
 
+  async create(data: {
+    room_name: string;
+    seat_capacity: number;
+    status: import('../generated/prisma/client').RoomStatus;
+    size: import('../generated/prisma/client').RoomSize;
+    description: string | null;
+  }): Promise<Room> {
+    return this.prisma.room.create({ data });
+  }
+
   async findByName(name: string, excludeId?: string): Promise<Room | null> {
     return this.prisma.room.findFirst({
       where: {
