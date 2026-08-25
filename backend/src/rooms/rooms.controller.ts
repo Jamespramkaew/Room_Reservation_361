@@ -1,6 +1,6 @@
-import { Controller, Get, Query, Param } from '@nestjs/common';
+import { Controller, Get, Query, Param, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { RoomService } from './rooms.service';
-import { QueryRoomsDto } from './dto';
+import { QueryRoomsDto, CreateRoomDto } from './dto';
 import { ApiResponse } from '../common/interfaces/response.interface';
 import { successResponse } from '../common/utils/response.util';
 import { RoomResponse, RoomDetailResponse } from './rooms.service';
@@ -24,5 +24,14 @@ export class RoomsController {
   ): Promise<ApiResponse<RoomDetailResponse>> {
     const data = await this.roomService.getRoomDetail(roomId);
     return successResponse(data, 'Room fetched successfully.');
+  }
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async createRoom(
+    @Body() body: CreateRoomDto,
+  ): Promise<ApiResponse<RoomDetailResponse>> {
+    const data = await this.roomService.createRoom(body);
+    return successResponse(data, 'Room created successfully.');
   }
 }
