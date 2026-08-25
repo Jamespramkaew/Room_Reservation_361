@@ -101,12 +101,14 @@ export class RoomService {
       await this._ensureNameUnique(dto.room_name, roomId);
     }
 
-    if (dto.facilities && dto.facilities.length > 0) {
-      await this._ensureFacilityExists(
-        dto.facilities.map((f) => f.facilityId),
-      );
-      for (const f of dto.facilities) {
-        this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+    if (dto.facilities !== undefined) {
+      if (dto.facilities.length > 0) {
+        await this._ensureFacilityExists(
+          dto.facilities.map((f) => f.facilityId),
+        );
+        for (const f of dto.facilities) {
+          this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
+        }
       }
     }
 
@@ -118,7 +120,17 @@ export class RoomService {
       ...(dto.description !== undefined && { description: dto.description }),
     });
 
-    if (dto.facilities && dto.facilities.length > 0) {
+    if (dto.facilities !== undefined) {
+      const existingFacilities = await this.roomFacilityRepo.findByRoomId(roomId);
+      const incomingIds = dto.facilities.map((f) => f.facilityId);
+      const toDelete = existingFacilities.filter(
+        (rf) => !incomingIds.includes(rf.facility_id),
+      );
+
+      for (const rf of toDelete) {
+        await this.roomFacilityRepo.deleteByRoomAndFacility(roomId, rf.facility_id);
+      }
+
       for (const f of dto.facilities) {
         await this.roomFacilityRepo.upsert(roomId, f.facilityId, {
           quantity: f.quantity,
