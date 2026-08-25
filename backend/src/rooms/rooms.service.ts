@@ -7,6 +7,7 @@ import {
 import { RoomRepository } from './rooms.repository';
 import { FacilityRepository } from './repositories/facility.repository';
 import { RoomFacilityRepository } from './repositories/room-facility.repository';
+import { PrismaService } from '../prisma';
 import { QueryRoomsDto, CreateRoomDto, UpdateRoomDto } from './dto';
 import { Pagination } from '../common/interfaces/response.interface';
 
@@ -69,6 +70,7 @@ export class RoomService {
     private readonly roomRepo: RoomRepository,
     private readonly facilityRepo: FacilityRepository,
     private readonly roomFacilityRepo: RoomFacilityRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   async deleteRoom(roomId: string): Promise<{ id: string; deleted_at: Date }> {
@@ -112,34 +114,45 @@ export class RoomService {
       }
     }
 
-    await this.roomRepo.update(roomId, {
-      ...(dto.room_name && { room_name: dto.room_name }),
-      ...(dto.capacity && { seat_capacity: dto.capacity }),
-      ...(dto.status && { status: dto.status }),
-      ...(dto.size && { size: dto.size }),
-      ...(dto.description !== undefined && { description: dto.description }),
-    });
-
-    if (dto.facilities !== undefined) {
-      const existingFacilities = await this.roomFacilityRepo.findByRoomId(roomId);
-      const incomingIds = dto.facilities.map((f) => f.facilityId);
-      const toDelete = existingFacilities.filter(
-        (rf) => !incomingIds.includes(rf.facility_id),
+    await this.prisma.$transaction(async (tx) => {
+      await this.roomRepo.update(
+        roomId,
+        {
+          ...(dto.room_name && { room_name: dto.room_name }),
+          ...(dto.capacity && { seat_capacity: dto.capacity }),
+          ...(dto.status && { status: dto.status }),
+          ...(dto.size && { size: dto.size }),
+          ...(dto.description !== undefined && { description: dto.description }),
+        },
+        tx,
       );
 
-      for (const rf of toDelete) {
-        await this.roomFacilityRepo.deleteByRoomAndFacility(roomId, rf.facility_id);
-      }
+      if (dto.facilities !== undefined) {
+        const existingFacilities = await this.roomFacilityRepo.findByRoomId(roomId, tx);
+        const incomingIds = dto.facilities.map((f) => f.facilityId);
+        const toDelete = existingFacilities.filter(
+          (rf) => !incomingIds.includes(rf.facility_id),
+        );
 
-      for (const f of dto.facilities) {
-        await this.roomFacilityRepo.upsert(roomId, f.facilityId, {
-          quantity: f.quantity,
-          broken_quantity: f.broken_quantity ?? 0,
-          sort_order: f.sort_order,
-          note: f.note ?? null,
-        });
+        for (const rf of toDelete) {
+          await this.roomFacilityRepo.deleteByRoomAndFacility(roomId, rf.facility_id, tx);
+        }
+
+        for (const f of dto.facilities) {
+          await this.roomFacilityRepo.upsert(
+            roomId,
+            f.facilityId,
+            {
+              quantity: f.quantity,
+              broken_quantity: f.broken_quantity ?? 0,
+              sort_order: f.sort_order,
+              note: f.note ?? null,
+            },
+            tx,
+          );
+        }
       }
-    }
+    });
 
     const updated = await this.roomRepo.findDetailById(roomId);
     return this.mapToDetailResponse(updated, true);
@@ -152,30 +165,41 @@ export class RoomService {
       await this._ensureFacilityExists(
         dto.facilities.map((f) => f.facilityId),
       );
-
       for (const f of dto.facilities) {
         this._ensureBrokenNotExceedTotal(f.quantity, f.broken_quantity ?? 0);
       }
     }
 
-    const room = await this.roomRepo.create({
-      room_name: dto.room_name,
-      seat_capacity: dto.capacity,
-      status: dto.status,
-      size: dto.size,
-      description: dto.description ?? null,
-    });
+    const room = await this.prisma.$transaction(async (tx) => {
+      const created = await this.roomRepo.create(
+        {
+          room_name: dto.room_name,
+          seat_capacity: dto.capacity,
+          status: dto.status,
+          size: dto.size,
+          description: dto.description ?? null,
+        },
+        tx,
+      );
 
-    if (dto.facilities !== undefined) {
-      for (const f of dto.facilities) {
-        await this.roomFacilityRepo.upsert(room.id, f.facilityId, {
-          quantity: f.quantity,
-          broken_quantity: f.broken_quantity ?? 0,
-          sort_order: f.sort_order,
-          note: f.note ?? null,
-        });
+      if (dto.facilities !== undefined) {
+        for (const f of dto.facilities) {
+          await this.roomFacilityRepo.upsert(
+            created.id,
+            f.facilityId,
+            {
+              quantity: f.quantity,
+              broken_quantity: f.broken_quantity ?? 0,
+              sort_order: f.sort_order,
+              note: f.note ?? null,
+            },
+            tx,
+          );
+        }
       }
-    }
+
+      return created;
+    });
 
     const created = await this.roomRepo.findDetailById(room.id);
     return this.mapToDetailResponse(created);
