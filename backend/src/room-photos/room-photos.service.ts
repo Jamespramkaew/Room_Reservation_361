@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, ConflictException } from "@nestjs/common";
 import { PrismaRepository } from "src/prisma/prisma.repository";
 import { RoomPhotosRepository } from "./room-photos.repository";
 import { RoomPhotos } from "../generated/prisma/client";
@@ -20,7 +20,7 @@ export class RoomPhotosService {
         if (!room) throw new NotFoundException("Room not found.");
 
         const roomPhotos = await this.roomPhotosRepo.getRoomPhotosByRoomId(roomId);
-        
+
         // แปลง object_key เป็น image_url และลบ object_key ออก
         return roomPhotos.map(photo => ({
             id: photo.id,
@@ -53,6 +53,30 @@ export class RoomPhotosService {
 
         return result;
     };
+
+    async updateRoomPhoto(roomId: string, roomPhotoId: string, sortOrder?: number, caption?: string) {
+        const room = await this.prismaRepo.findById('room', roomId)
+        if (!room) throw new NotFoundException("Room not found.");
+
+        const roomPhoto = await this.prismaRepo.findById('roomPhotos', roomPhotoId) as RoomPhotos;
+        if (!roomPhoto) throw new NotFoundException("Room photo not found.");
+
+        if (sortOrder && (sortOrder !== roomPhoto.sort_order)) {
+            const validateOrder = await this.roomPhotosRepo.findRoomPhotosBySortOrder(roomId, sortOrder);
+            if (validateOrder) throw new ConflictException("Sort order already exists for this room photo");
+        }
+
+        const result = await this.roomPhotosRepo.updateRoomPhoto({
+            roomPhotoId,
+            sortOrder: sortOrder || roomPhoto.sort_order,
+            caption: caption ?? (roomPhoto.caption ?? undefined)
+        });
+
+        return result;
+    };
+
+
+
 };
 
 

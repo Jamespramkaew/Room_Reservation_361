@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Param, UploadedFile, UseInterceptors, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UploadedFile, UseInterceptors, HttpCode, HttpStatus, BadRequestException, Patch } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiResponse } from 'src/common/interfaces/response.interface';
 import { successResponse } from 'src/common/utils/response.util';
 import { RoomPhotosService } from './room-photos.service';
 import { S3Service } from 'src/s3/s3.service';
-import { AddRoomPhotoRequestDto } from './room-photo.dto';
+import { AddRoomPhotoRequestDto, UpdateRoomPhotoRequestDto } from './room-photo.dto';
 
 @Controller('rooms/:roomId/images')
 export class RoomPhotosController {
@@ -55,4 +55,22 @@ export class RoomPhotosController {
             throw error;
         };
     };
+
+    @Patch(':roomPhotoId')
+    async updateRoomPhoto(
+        @Param('roomId') roomId: string,
+        @Param('roomPhotoId') roomPhotoId: string,
+        @Body() body: UpdateRoomPhotoRequestDto
+    ) {
+        if(!body.caption && !body.sortOrder)
+            throw new BadRequestException('At least one field must be provided for update')
+
+        const data = await this.service.updateRoomPhoto(
+            roomId,
+            roomPhotoId,
+            body.sortOrder? body.sortOrder : undefined,
+            body.caption? body.caption : undefined
+        );
+        return successResponse(data, "Room photo updated successfully");
+    }
 };
