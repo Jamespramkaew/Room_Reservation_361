@@ -91,6 +91,23 @@ export class RoomRepository {
     });
   }
 
+  async softDelete(roomId: string): Promise<Room> {
+    return this.prisma.room.update({
+      where: { id: roomId },
+      data: { deleted_at: new Date() },
+    });
+  }
+
+  async hasActiveBookings(roomId: string): Promise<boolean> {
+    const count = await this.prisma.booking.count({
+      where: {
+        room_id: roomId,
+        status: { in: ['PENDING', 'APPROVED'] },
+      },
+    });
+    return count > 0;
+  }
+
   async findByName(name: string, excludeId?: string): Promise<Room | null> {
     return this.prisma.room.findFirst({
       where: {
