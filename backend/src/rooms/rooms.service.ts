@@ -71,6 +71,23 @@ export class RoomService {
     private readonly roomFacilityRepo: RoomFacilityRepository,
   ) {}
 
+  async deleteRoom(roomId: string): Promise<{ id: string; deleted_at: Date }> {
+    const existing = await this.roomRepo.findDetailById(roomId);
+    if (!existing) {
+      throw new NotFoundException('Room not found.');
+    }
+
+    const hasBookings = await this.roomRepo.hasActiveBookings(roomId);
+    if (hasBookings) {
+      throw new ConflictException(
+        'Cannot delete room because it is referenced by reservations.',
+      );
+    }
+
+    const deleted = await this.roomRepo.softDelete(roomId);
+    return { id: deleted.id, deleted_at: deleted.deleted_at as Date };
+  }
+
   async updateRoom(
     roomId: string,
     dto: UpdateRoomDto,
