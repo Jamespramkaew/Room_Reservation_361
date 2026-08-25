@@ -99,13 +99,11 @@ export class RoomRepository {
   }
 
   async hasActiveBookings(roomId: string): Promise<boolean> {
-    const count = await this.prisma.booking.count({
-      where: {
-        room_id: roomId,
-        status: { in: ['PENDING', 'APPROVED'] },
-      },
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+      select: { status: true },
     });
-    return count > 0;
+    return room?.status === 'RESERVED';
   }
 
   async findByName(name: string, excludeId?: string): Promise<Room | null> {
