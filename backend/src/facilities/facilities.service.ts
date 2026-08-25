@@ -6,6 +6,7 @@ import {
 import { FacilitiesRepository } from './facilities.repository';
 import { Facilities } from '../generated/prisma/client';
 import { CreateFacilitiesDto } from './dto/create-facilities.dto';
+import { UpdateFacilitiesDto } from './dto/update-facilities.dto';
 
 @Injectable()
 export class FacilitiesService {
@@ -36,5 +37,18 @@ export class FacilitiesService {
         return this.repository.create({
             name: dto.name
         });
+    }
+
+    async update(id: string, dto: UpdateFacilitiesDto): Promise<Facilities> {
+        await this.findById(id);
+        
+        if (dto.name) {
+            const existing = await this.repository.findByName(dto.name);
+            if (existing && existing.id !== id) {
+                throw new ConflictException(`Facility with ID "${id}" not found`);
+            }
+        }
+
+        return this.repository.update(id, dto);
     }
 }

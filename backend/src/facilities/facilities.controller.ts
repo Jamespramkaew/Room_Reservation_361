@@ -5,10 +5,12 @@ import {
   HttpStatus,
   Param,
   Post,
+  Patch,
   Body,
 } from '@nestjs/common';
 import { FacilitiesService } from './facilities.service';
 import { CreateFacilitiesDto } from './dto/create-facilities.dto';
+import { UpdateFacilitiesDto } from './dto/update-facilities.dto';
 import { ApiResponse } from '../common/interfaces/response.interface';
 import { successResponse } from '../common/utils/response.util';
 
@@ -35,5 +37,10 @@ export class FacilitiesController {
         return successResponse(data, 'Facility created successfully');
     }
 
+    @Patch(':id')
+    async update( @Param('id') id: string, @Body() dto: UpdateFacilitiesDto): Promise<ApiResponse<any>> {
+        const data = await this.facilitiesService.update(id, dto);
+        return successResponse(data, 'Facility updated successfully');
+    }
 
 }

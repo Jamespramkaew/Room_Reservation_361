@@ -29,4 +29,11 @@ export class FacilitiesRepository {
             data,
         });
     }
+
+    async update(id: string, data: Prisma.FacilitiesUpdateInput): Promise<Facilities> {
+        return this.prisma.facilities.update({
+            where: { id },
+            data,
+        });
+    }
 }
