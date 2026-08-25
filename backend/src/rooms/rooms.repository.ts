@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma';
-import { Room, RoomStatus, RoomSize, Prisma } from '../generated/prisma/client';
+import { Room, RoomStatus, RoomSize, Prisma, PrismaClient } from '../generated/prisma/client';
+
+type PrismaTx = Omit<PrismaClient, `$${string}`>;
 
 export interface RoomFindManyArgs {
   search?: string;
@@ -65,14 +67,18 @@ export class RoomRepository {
     return this.prisma.room.count({ where });
   }
 
-  async create(data: {
-    room_name: string;
-    seat_capacity: number;
-    status: import('../generated/prisma/client').RoomStatus;
-    size: import('../generated/prisma/client').RoomSize;
-    description: string | null;
-  }): Promise<Room> {
-    return this.prisma.room.create({ data });
+  async create(
+    data: {
+      room_name: string;
+      seat_capacity: number;
+      status: RoomStatus;
+      size: RoomSize;
+      description: string | null;
+    },
+    tx?: PrismaTx,
+  ): Promise<Room> {
+    const client = tx ?? this.prisma;
+    return client.room.create({ data });
   }
 
   async update(
@@ -80,12 +86,14 @@ export class RoomRepository {
     data: {
       room_name?: string;
       seat_capacity?: number;
-      status?: import('../generated/prisma/client').RoomStatus;
-      size?: import('../generated/prisma/client').RoomSize;
+      status?: RoomStatus;
+      size?: RoomSize;
       description?: string | null;
     },
+    tx?: PrismaTx,
   ): Promise<Room> {
-    return this.prisma.room.update({
+    const client = tx ?? this.prisma;
+    return client.room.update({
       where: { id: roomId },
       data,
     });
