@@ -108,10 +108,11 @@ model RoomPhotos {
 }
 
 model Facilities {
-  id              String   @id @default(uuid())
-  name            String   @unique
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
+  id         String    @id @default(uuid())
+  name       String    @unique
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
 
   room_facilities RoomFacilities[]
 }
