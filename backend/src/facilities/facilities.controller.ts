@@ -45,9 +45,10 @@ export class FacilitiesController {
     }
 
     @Delete(':id')
-    @HttpCode(HttpStatus.NO_CONTENT)
-    async delete(@Param('id') id: string): Promise<void> {
-        await this.facilitiesService.delete(id);
+    async delete(@Param('id') id: string): Promise<ApiResponse<any>> {
+        const data = await this.facilitiesService.delete(id);
+        return successResponse(data, 'Facility deleted successfully');
+
     }
 
 }
