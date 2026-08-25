@@ -1,36 +1,10 @@
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
+import NavBar from '../components/NavBar'
 
 export default function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold text-indigo-600">
-            Room Reservation
-          </Link>
-          <div className="flex gap-6">
-            <Link
-              to="/"
-              className="text-gray-700 hover:text-indigo-600 font-medium transition"
-            >
-              Home
-            </Link>
-            <Link
-              to="/rooms"
-              className="text-gray-700 hover:text-indigo-600 font-medium transition"
-            >
-              Rooms
-            </Link>
-            <Link
-              to="/admin/console"
-              className="text-gray-700 hover:text-indigo-600 font-medium transition"
-            >
-              Admin
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <NavBar />
 
       {/* Main Content */}
       <main className="flex-1">

@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma';
 import { ExampleModule } from './example';
 import { RoomsModule } from './rooms';
 import { RequestValidationMiddleware } from './common/middlewares';
+import { FacilitiesModule } from './facilities/facilities.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { RequestValidationMiddleware } from './common/middlewares';
     PrismaModule,
     ExampleModule,
     RoomsModule,
+    FacilitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
