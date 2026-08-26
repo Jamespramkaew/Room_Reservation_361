@@ -121,6 +121,7 @@ async function main() {
       seat_capacity: 50,
       status: 'AVAILABLE',
       size: 'LARGE',
+      room_type: 'LECTURE',
     },
   });
 
@@ -131,6 +132,7 @@ async function main() {
       seat_capacity: 30,
       status: 'AVAILABLE',
       size: 'MEDIUM',
+      room_type: 'MEETING',
     },
   });
 
@@ -141,6 +143,7 @@ async function main() {
       seat_capacity: 15,
       status: 'AVAILABLE',
       size: 'SMALL',
+      room_type: 'LECTURE',
     },
   });
 
@@ -151,6 +154,7 @@ async function main() {
       seat_capacity: 40,
       status: 'MAINTENANCE',
       size: 'LARGE',
+      room_type: 'LAB',
     },
   });
 
@@ -161,6 +165,7 @@ async function main() {
       seat_capacity: 25,
       status: 'RESERVED',
       size: 'MEDIUM',
+      room_type: 'MEETING',
     },
   });
 
