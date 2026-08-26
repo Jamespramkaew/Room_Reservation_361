@@ -14,6 +14,7 @@ export const rooms: Room[] = [
     projector: 1,
     mic: 2,
     image: '',
+    images: [],
   },
   {
     id: 'lc102',
@@ -26,6 +27,7 @@ export const rooms: Room[] = [
     projector: 2,
     mic: 2,
     image: '',
+    images: [],
   },
   {
     id: 'lc103',
@@ -38,6 +40,7 @@ export const rooms: Room[] = [
     projector: 1,
     mic: 2,
     image: '',
+    images: [],
   },
   {
     id: 'lc104',
@@ -49,6 +52,7 @@ export const rooms: Room[] = [
     projector: 1,
     mic: 1,
     image: '',
+    images: [],
   },
   {
     id: 'lc105',
@@ -60,6 +64,7 @@ export const rooms: Room[] = [
     projector: 1,
     mic: 1,
     image: '',
+    images: [],
   },
   {
     id: 'lc106',
@@ -70,5 +75,6 @@ export const rooms: Room[] = [
     status: 'Available',
     projector: 1,
     image: '',
+    images: [],
   },
 ]

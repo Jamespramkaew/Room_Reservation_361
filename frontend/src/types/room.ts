@@ -9,4 +9,5 @@ export interface Room {
   projector?: number
   mic?: number
   image?: string
+  images?: string[]
 }
