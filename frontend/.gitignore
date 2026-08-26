@@ -17,6 +17,9 @@ dist-ssr
 .env.local
 .env.*.local
 
+# Design reference / prototype files (not part of the app)
+protorype/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

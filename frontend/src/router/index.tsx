@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import Rooms from '../pages/Rooms'
+import RoomDetail from '../pages/RoomDetail'
 import AdminConsole from '../pages/AdminConsole'
 
 export const router = createBrowserRouter([
@@ -11,6 +12,10 @@ export const router = createBrowserRouter([
       {
         index: true,
         element: <Rooms />,
+      },
+      {
+        path: 'rooms/:id',
+        element: <RoomDetail />,
       },
       {
         path: 'admin/console',
