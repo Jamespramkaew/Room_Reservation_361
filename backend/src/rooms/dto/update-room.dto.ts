@@ -8,7 +8,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
-import { RoomStatus, RoomSize } from '../../generated/prisma/client';
+import { RoomStatus, RoomSize, RoomType } from '../../generated/prisma/client';
 import { RoomFacilityInputDto } from './create-room.dto';
 
 export class UpdateRoomDto {
@@ -33,6 +33,12 @@ export class UpdateRoomDto {
     message: `size must be one of: ${Object.values(RoomSize).join(', ')}`,
   })
   size?: RoomSize;
+
+  @IsOptional()
+  @IsEnum(RoomType, {
+    message: `room_type must be one of: ${Object.values(RoomType).join(', ')}`,
+  })
+  room_type?: RoomType;
 
   @IsOptional()
   @IsString({ message: 'description must be a string' })

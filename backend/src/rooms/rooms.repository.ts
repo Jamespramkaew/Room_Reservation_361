@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma';
-import { Room, RoomStatus, RoomSize, Prisma, PrismaClient } from '../generated/prisma/client';
+import { Room, RoomStatus, RoomSize, RoomType, Prisma, PrismaClient } from '../generated/prisma/client';
 
 type PrismaTx = Omit<PrismaClient, `$${string}`>;
 
@@ -8,6 +8,7 @@ export interface RoomFindManyArgs {
   search?: string;
   status?: RoomStatus;
   size?: RoomSize;
+  room_type?: RoomType;
   capacity?: number;
   facilities?: string[];
   skip?: number;
@@ -30,6 +31,7 @@ export class RoomRepository {
         seat_capacity: true,
         status: true,
         size: true,
+        room_type: true,
         deleted_at: true,
         created_at: true,
         updated_at: true,
@@ -73,6 +75,7 @@ export class RoomRepository {
       seat_capacity: number;
       status: RoomStatus;
       size: RoomSize;
+      room_type: RoomType;
       description: string | null;
     },
     tx?: PrismaTx,
@@ -88,6 +91,7 @@ export class RoomRepository {
       seat_capacity?: number;
       status?: RoomStatus;
       size?: RoomSize;
+      room_type?: RoomType;
       description?: string | null;
     },
     tx?: PrismaTx,
@@ -135,6 +139,7 @@ export class RoomRepository {
         seat_capacity: true,
         status: true,
         size: true,
+        room_type: true,
         deleted_at: true,
         created_at: true,
         updated_at: true,
@@ -187,6 +192,10 @@ export class RoomRepository {
 
     if (args.size) {
       where.size = args.size;
+    }
+
+    if (args.room_type) {
+      where.room_type = args.room_type;
     }
 
     if (args.capacity) {

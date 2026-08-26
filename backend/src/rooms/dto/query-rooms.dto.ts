@@ -8,7 +8,7 @@ import {
   Max,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { RoomStatus, RoomSize } from '../../generated/prisma/client';
+import { RoomStatus, RoomSize, RoomType } from '../../generated/prisma/client';
 
 export class QueryRoomsDto {
   @IsOptional()
@@ -52,4 +52,10 @@ export class QueryRoomsDto {
     message: `size must be one of: ${Object.values(RoomSize).join(', ')}`,
   })
   size?: RoomSize;
+
+  @IsOptional()
+  @IsEnum(RoomType, {
+    message: `room_type must be one of: ${Object.values(RoomType).join(', ')}`,
+  })
+  room_type?: RoomType;
 }

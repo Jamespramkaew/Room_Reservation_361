@@ -40,6 +40,7 @@ export interface RoomResponse {
   capacity: number;
   status: string;
   size: string;
+  room_type: string;
   facilities: string[];
   is_active: boolean;
   description: string | null;
@@ -52,6 +53,7 @@ export interface RoomDetailResponse {
   capacity: number;
   status: string;
   size: string;
+  room_type: string;
   is_active: boolean;
   description: string | null;
   facilities: RoomFacilityResponse[];
@@ -122,6 +124,7 @@ export class RoomService {
           ...(dto.capacity && { seat_capacity: dto.capacity }),
           ...(dto.status && { status: dto.status }),
           ...(dto.size && { size: dto.size }),
+          ...(dto.room_type && { room_type: dto.room_type }),
           ...(dto.description !== undefined && { description: dto.description }),
         },
         tx,
@@ -177,6 +180,7 @@ export class RoomService {
           seat_capacity: dto.capacity,
           status: dto.status,
           size: dto.size,
+          room_type: dto.room_type,
           description: dto.description ?? null,
         },
         tx,
@@ -245,6 +249,7 @@ export class RoomService {
         search: filters.search,
         status: filters.status,
         size: filters.size,
+        room_type: filters.room_type,
         capacity: filters.capacity,
         facilities: filters.facilities,
         skip,
@@ -254,6 +259,7 @@ export class RoomService {
         search: filters.search,
         status: filters.status,
         size: filters.size,
+        room_type: filters.room_type,
         capacity: filters.capacity,
         facilities: filters.facilities,
       }),
@@ -289,6 +295,7 @@ export class RoomService {
       capacity: room.seat_capacity,
       status: room.status,
       size: room.size,
+      room_type: room.room_type,
       is_active: room.deleted_at === null,
       description: room.description ?? null,
       facilities: room.room_facilities.map((rf: any) => ({
@@ -323,6 +330,7 @@ export class RoomService {
       capacity: room.seat_capacity,
       status: room.status,
       size: room.size,
+      room_type: room.room_type,
       is_active: room.deleted_at === null,
       description: room.description ?? null,
       facilities: room.room_facilities.map(
