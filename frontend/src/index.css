@@ -3,4 +3,178 @@
 body {
   font-family: 'IBM Plex Sans Thai', sans-serif;
   color: #1a1a1a;
+  margin: 0;
+  min-width: 320px;
+}
+
+@media (max-width: 1024px) {
+  .navbar-inner {
+    gap: 32px !important;
+    padding: 0 24px !important;
+  }
+
+  .rooms-page {
+    padding: 40px 24px 64px !important;
+  }
+
+  .room-detail-page {
+    padding: 24px 24px 64px !important;
+  }
+
+  .rooms-page .rooms-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 24px !important;
+  }
+
+  .search-filter-row {
+    padding-left: 0 !important;
+  }
+
+  .room-detail-page .room-detail-card,
+  .booking-rules {
+    padding: 22px !important;
+  }
+
+  .room-gallery {
+    gap: 14px !important;
+  }
+
+  .room-gallery-side {
+    height: 340px !important;
+  }
+
+  .room-gallery > .room-gallery-main {
+    height: 340px !important;
+  }
+
+  .room-detail-page .room-detail-head {
+    gap: 24px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .navbar-inner {
+    align-items: center !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    height: auto !important;
+    padding: 14px 16px 0 !important;
+  }
+
+  .navbar-inner .logo {
+    height: 42px !important;
+  }
+
+  .navbar-inner nav {
+    width: 100% !important;
+    justify-content: center !important;
+    gap: 24px !important;
+    min-height: 48px !important;
+  }
+
+  .navbar-inner nav a {
+    font-size: 15px !important;
+  }
+
+  .rooms-page,
+  .room-detail-page {
+    padding: 24px 16px 48px !important;
+  }
+
+  .rooms-page .rooms-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    margin-top: 24px !important;
+  }
+
+  .search-filter {
+    padding: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  .search-filter-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .search-filter-row > *,
+  .search-filter-row .search-filter-dropdown,
+  .search-filter-row button {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .room-detail-page .room-detail-card,
+  .booking-rules {
+    padding: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  .room-gallery {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .room-gallery > .room-gallery-main {
+    height: 230px !important;
+  }
+
+  .room-gallery-side {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 120px !important;
+    gap: 12px !important;
+    height: 120px !important;
+  }
+
+  .room-detail-page .room-detail-head {
+    flex-direction: column !important;
+    gap: 16px !important;
+    margin-top: 24px !important;
+  }
+
+  .room-detail-page .room-detail-title {
+    font-size: 22px !important;
+  }
+
+  .room-detail-page .room-detail-tags {
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  .room-detail-page .room-detail-capacity,
+  .room-detail-page .room-detail-status {
+    flex: 1 !important;
+    width: auto !important;
+    padding: 0 12px !important;
+    font-size: 14px !important;
+  }
+
+  .room-detail-page .equipment-bar {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+  }
+
+  .booking-rules-row {
+    align-items: stretch !important;
+    gap: 20px !important;
+  }
+
+  .booking-contact {
+    align-items: stretch !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .booking-contact .booking-office,
+  .booking-contact .booking-line {
+    justify-content: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .booking-contact .or {
+    text-align: center !important;
+  }
 }

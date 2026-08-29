@@ -13,8 +13,12 @@ export const rooms: Room[] = [
     seats: 39,
     projector: 1,
     mic: 2,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1.jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
   {
     id: 'lc102',
@@ -26,8 +30,12 @@ export const rooms: Room[] = [
     seats: 67,
     projector: 2,
     mic: 2,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room102.jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room102.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
   {
     id: 'lc103',
@@ -39,8 +47,12 @@ export const rooms: Room[] = [
     seats: 39,
     projector: 1,
     mic: 2,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room103.jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room103.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
   {
     id: 'lc104',
@@ -51,8 +63,12 @@ export const rooms: Room[] = [
     status: 'Available',
     projector: 1,
     mic: 1,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room104.jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room104.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
   {
     id: 'lc105',
@@ -63,8 +79,12 @@ export const rooms: Room[] = [
     status: 'Available',
     projector: 1,
     mic: 1,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room105(4).jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room105(4).jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
   {
     id: 'lc106',
@@ -74,7 +94,11 @@ export const rooms: Room[] = [
     size: 'Small',
     status: 'Available',
     projector: 1,
-    image: '',
-    images: [],
+    image: 'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room106.jpg',
+    images: [
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room106.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-1.jpg',
+      'https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com/Room1-2.jpg'
+    ],
   },
 ]
