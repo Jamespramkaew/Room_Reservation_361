@@ -4,6 +4,7 @@ import RoomGallery from '../components/RoomGallery'
 import EquipmentBar from '../components/EquipmentBar'
 import BookingRules from '../components/BookingRules'
 import { rooms } from '../data/rooms'
+import monitorIcon from '../assets/icon-mornitor.png'
 
 export default function RoomDetail() {
   const { id } = useParams()
@@ -19,7 +20,7 @@ export default function RoomDetail() {
   }
 
   return (
-    <main style={styles.main}>
+    <main className="room-detail-page" style={styles.main}>
       <div style={styles.container}>
         <button onClick={() => navigate(-1)} style={styles.back}>
           <svg
@@ -39,17 +40,21 @@ export default function RoomDetail() {
           <span>ย้อนกลับ</span>
         </button>
 
-        <div style={styles.card}>
+        <div className="room-detail-card" style={styles.card}>
           <RoomGallery images={room.images} alt={room.name} />
 
-          <div style={styles.headRow}>
+          <div className="room-detail-head" style={styles.headRow}>
             <div style={styles.titleCol}>
-              <h1 style={styles.title}>{room.name}</h1>
+              <h1 className="room-detail-title" style={styles.title}>{room.name}</h1>
               <p style={styles.desc}>{room.desc}</p>
             </div>
-            <div style={styles.tags}>
-              <span style={styles.sizeTag}>{`Size : ${room.size}`}</span>
-              <span style={styles.statusTag}>{room.status}</span>
+            <div className="room-detail-tags" style={styles.tags}>
+              <span className="room-detail-capacity" style={styles.capacityTag}>
+                <img src={monitorIcon} alt="capacity" style={styles.capacityIcon} />
+                <span style={styles.capacityText}>Seat: </span>
+                <span style={styles.capacityValue}>{room.seats ?? 0}</span>
+              </span>
+              <span className="room-detail-status" style={styles.statusTag}>{room.status}</span>
             </div>
           </div>
 
@@ -97,11 +102,12 @@ const styles: Record<string, CSSProperties> = {
   title: { margin: 0, fontSize: 26, fontWeight: 600, color: '#1a1a1a' },
   desc: { margin: 0, fontSize: 14, color: '#6b6b6b' },
   tags: { display: 'flex', alignItems: 'center', gap: 20, flex: 'none' },
-  sizeTag: {
+  capacityTag: {
     display: 'flex',
     alignItems: 'center',
+    gap: 10,
     height: 40,
-    padding: '0 22px',
+    padding: '0 18px 0 12px',
     background: '#111111',
     color: '#ffffff',
     borderRadius: 8,
@@ -109,6 +115,15 @@ const styles: Record<string, CSSProperties> = {
     fontWeight: 600,
     whiteSpace: 'nowrap',
   },
+  capacityIcon: {
+    width: 18,
+    height: 18,
+    display: 'block',
+    objectFit: 'contain',
+    filter: 'brightness(0) invert(1)',
+  },
+  capacityText: { fontSize: 15, fontWeight: 600 },
+  capacityValue: { fontSize: 15, fontWeight: 700 },
   statusTag: {
     display: 'flex',
     alignItems: 'center',

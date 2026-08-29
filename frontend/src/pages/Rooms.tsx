@@ -24,9 +24,9 @@ export default function Rooms() {
   }
 
   return (
-    <main style={styles.main}>
+    <main className="rooms-page" style={styles.main}>
       <SearchFilter query={query} onQueryChange={setQuery} type={type} onTypeChange={setType} />
-      <div style={styles.grid}>
+      <div className="rooms-grid" style={styles.grid}>
         {rooms.map((room) => (
           <RoomCard key={room.id} room={room} onOpen={handleOpenRoom} />
         ))}

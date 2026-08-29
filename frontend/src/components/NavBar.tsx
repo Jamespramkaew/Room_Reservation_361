@@ -18,7 +18,7 @@ export default function NavBar({ items = defaultItems }: NavBarProps) {
 
   return (
     <header style={styles.header}>
-      <div style={styles.inner}>
+      <div className="navbar-inner" style={styles.inner}>
         <Link to="/" style={styles.logoLink}>
           <img src={logo} alt="Computer Science, Thammasat University" style={styles.logo} />
         </Link>
