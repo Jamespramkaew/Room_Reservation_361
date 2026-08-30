@@ -14,18 +14,18 @@ interface BookingRulesProps {
 
 export default function BookingRules({ contactHref = '#' }: BookingRulesProps) {
   return (
-    <section className="booking-rules" style={styles.section}>
+    <section style={styles.section}>
       <h2 style={styles.heading}>การจองและกฎของการใช้งาน</h2>
-      <div className="booking-rules-row" style={styles.row}>
+      <div style={styles.row}>
         <ol style={styles.list}>
           {RULES.map((rule) => (
             <li key={rule}>{rule}</li>
           ))}
         </ol>
-        <div className="booking-contact" style={styles.contactRow}>
-          <span className="booking-office" style={styles.officeTag}>ติดต่อที่ : สำนักทะเบียน CSTU</span>
+        <div style={styles.contactRow}>
+          <span style={styles.officeTag}>ติดต่อที่ : สำนักทะเบียน CSTU</span>
           <span style={styles.or}>หรือ</span>
-          <a href={contactHref} className="booking-line" style={styles.lineBtn}>
+          <a href={contactHref} style={styles.lineBtn}>
             <img src={lineIcon} alt="LINE" style={styles.lineIcon} />
             <span>ติดต่อเจ้าหน้าที่</span>
           </a>

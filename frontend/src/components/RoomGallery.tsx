@@ -9,11 +9,11 @@ export default function RoomGallery({ images = [], alt = '' }: RoomGalleryProps)
   const [main, second, third] = images
 
   return (
-    <div className="room-gallery" style={styles.grid}>
-      <div className="room-gallery-main" style={styles.mainBox}>
+    <div style={styles.grid}>
+      <div style={styles.mainBox}>
         {main ? <img src={main} alt={alt} style={styles.img} /> : null}
       </div>
-      <div className="room-gallery-side" style={styles.sideCol}>
+      <div style={styles.sideCol}>
         <div style={styles.sideBox}>
           {second ? <img src={second} alt={alt} style={styles.img} /> : null}
         </div>

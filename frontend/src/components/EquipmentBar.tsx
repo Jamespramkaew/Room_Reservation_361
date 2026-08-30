@@ -19,7 +19,7 @@ export default function EquipmentBar({ room }: EquipmentBarProps) {
   if (items.length === 0) return null
 
   return (
-    <div className="equipment-bar" style={styles.bar}>
+    <div style={styles.bar}>
       {items.map((item) => (
         <Fragment key={item.key}>
           <span style={styles.iconCell}>

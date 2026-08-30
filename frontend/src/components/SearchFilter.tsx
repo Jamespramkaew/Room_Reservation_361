@@ -30,10 +30,10 @@ export default function SearchFilter({
   const options = [{ label: 'ทั้งหมด', value: '' }, ...ROOM_TYPES.map((t) => ({ label: t, value: t }))]
 
   return (
-    <section className="search-filter" style={styles.panel}>
+    <section style={styles.panel}>
       <style>{keyframes}</style>
       <h2 style={styles.heading}>Searching and Filter</h2>
-      <div className="search-filter-row" style={styles.row}>
+      <div style={styles.row}>
         <div style={styles.searchBox}>
           <input
             type="text"
@@ -57,7 +57,7 @@ export default function SearchFilter({
           </svg>
         </div>
 
-        <div ref={boxRef} className="search-filter-dropdown" style={styles.dropdownWrap}>
+        <div ref={boxRef} style={styles.dropdownWrap}>
           <button onClick={() => setOpen((v) => !v)} style={styles.selectBtn}>
             <span style={styles.selectLabel}>{type || 'ชนิดห้องเรียน'}</span>
             <Chevron />
