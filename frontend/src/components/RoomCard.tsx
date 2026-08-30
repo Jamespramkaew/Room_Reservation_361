@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { type CSSProperties, useState } from 'react'
 import monitorIcon from '../assets/icon-mornitor.png'
 import type { Room } from '../types/room'
 
@@ -7,7 +7,36 @@ interface RoomCardProps {
   onOpen?: (room: Room) => void
 }
 
+// Inline SVG seat icon for co-working / seats-only rooms
+function SeatIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ display: 'block' }}
+    >
+      <circle cx="12" cy="5" r="2.5" />
+      <path d="M7 22v-5a5 5 0 0 1 10 0v5" />
+      <line x1="9" y1="13" x2="15" y2="13" />
+    </svg>
+  )
+}
+
 export default function RoomCard({ room, onOpen = () => {} }: RoomCardProps) {
+  const [hovered, setHovered] = useState(false)
+
+  // Prefer computers; fall back to seats if no computers
+  const showComputer = room.computers != null && room.computers > 0
+  const showSeat = !showComputer && room.seats != null && room.seats > 0
+  const badgeCount = showComputer ? room.computers : room.seats
+  const badgeLabel = showComputer ? 'เครื่องคอมพิวเตอร์' : 'ที่นั่ง'
+
   return (
     <article style={styles.card}>
       <div style={styles.imageBox}>
@@ -17,19 +46,28 @@ export default function RoomCard({ room, onOpen = () => {} }: RoomCardProps) {
         <h3 style={styles.name}>{room.name}</h3>
         <p style={styles.desc}>{room.desc}</p>
         <div style={styles.footer}>
-          {room.seats != null && (
-            <div style={styles.badge}>
+          {(showComputer || showSeat) && (
+            <div style={styles.badge} title={badgeLabel}>
               <span style={styles.badgeIcon}>
-                <img
-                  src={monitorIcon}
-                  alt="เครื่องคอมพิวเตอร์"
-                  style={{ width: 17, height: 17, display: 'block' }}
-                />
+                {showComputer ? (
+                  <img
+                    src={monitorIcon}
+                    alt={badgeLabel}
+                    style={{ width: 17, height: 17, display: 'block' }}
+                  />
+                ) : (
+                  <SeatIcon />
+                )}
               </span>
-              <span style={styles.badgeCount}>{room.seats}</span>
+              <span style={styles.badgeCount}>{badgeCount}</span>
             </div>
           )}
-          <button onClick={() => onOpen(room)} style={styles.cta}>
+          <button
+            onClick={() => onOpen(room)}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{ ...styles.cta, ...(hovered ? styles.ctaHover : {}) }}
+          >
             ดูรายละเอียด
           </button>
         </div>
@@ -68,12 +106,13 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 8,
     overflow: 'hidden',
     height: 30,
+    cursor: 'default',
   },
-  badgeIcon: { display: 'flex', alignItems: 'center', padding: '0 12px', height: '100%' },
+  badgeIcon: { display: 'flex', alignItems: 'center', padding: '0 10px', height: '100%' },
   badgeCount: {
     display: 'flex',
     alignItems: 'center',
-    padding: '0 16px',
+    padding: '0 14px',
     height: '100%',
     background: '#1a1a1a',
     color: '#ffffff',
@@ -93,5 +132,9 @@ const styles: Record<string, CSSProperties> = {
     fontSize: 14,
     fontWeight: 500,
     cursor: 'pointer',
+    transition: 'background 0.18s',
+  },
+  ctaHover: {
+    background: '#F59E0B',
   },
 }
