@@ -19,7 +19,7 @@ export default function NavBar({ items = defaultItems }: NavBarProps) {
   return (
     <header style={styles.header}>
       <div className="navbar-inner" style={styles.inner}>
-        <Link to="/" style={styles.logoLink}>
+        <Link to="/" style={styles.logoLink} reloadDocument>
           <img src={logo} alt="Computer Science, Thammasat University" style={styles.logo} />
         </Link>
         <nav style={styles.nav}>
@@ -30,6 +30,7 @@ export default function NavBar({ items = defaultItems }: NavBarProps) {
               <Link
                 key={item.label}
                 to={item.to}
+                reloadDocument={item.to === '/'}
                 style={{ ...styles.link, ...(active ? styles.linkActive : null) }}
               >
                 {item.label}
