@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma';
 import { ExampleModule } from './example';
 import { RoomsModule } from './rooms';
+import { MockRoomsModule } from './mock-rooms';
 import { RoomPhotosModule} from './room-photos';
 import { RequestValidationMiddleware } from './common/middlewares';
 import { S3Module } from './s3/s3.module';
@@ -18,6 +19,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
     PrismaModule,
     ExampleModule,
     RoomsModule,
+    MockRoomsModule,
     RoomPhotosModule,
     S3Module,
     FacilitiesModule,
