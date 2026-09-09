@@ -11,7 +11,10 @@ interface NavBarProps {
   items?: NavItem[]
 }
 
-const defaultItems: NavItem[] = [{ label: 'All rooms', to: '/' }]
+const defaultItems: NavItem[] = [
+  { label: 'All rooms', to: '/' },
+  { label: 'Live API', to: '/live' },
+]
 
 export default function NavBar({ items = defaultItems }: NavBarProps) {
   const location = useLocation()
