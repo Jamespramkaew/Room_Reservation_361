@@ -193,7 +193,7 @@ curl http://roomres.execute-api.localhost.localstack.cloud:4566/dev/api/faciliti
 
 **ถ้าต้องแก้ตาราง** ให้แก้ `src/shared/db/schema.ts` แล้วรัน `npm run db:generate -- --name <ชื่อสิ่งที่เปลี่ยน>` จากนั้น commit ไฟล์ใน `drizzle/migrations/` ไปด้วย เพื่อนที่ pull โค้ดไปจะได้รัน `npm run db:migrate` ตามได้
 
-**ห้ามรัน `prisma migrate` ใน `backend/` อีก** ตอนนี้ Drizzle เป็นเจ้าของ schema แล้ว ทั้งสองตัวชี้ DB เดียวกัน ถ้ารันทั้งคู่จะตีกัน
+**ห้ามรัน `prisma migrate` ใน `archive/backend/` อีก** ตอนนี้ Drizzle เป็นเจ้าของ schema แล้ว ทั้งสองตัวชี้ DB เดียวกัน ถ้ารันทั้งคู่จะตีกัน
 
 ---
 
