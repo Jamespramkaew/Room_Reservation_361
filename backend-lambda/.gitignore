@@ -9,8 +9,6 @@ dist/
 .env
 .env.local
 
-# Drizzle
-drizzle/
 
 # IDE
 .vscode/
