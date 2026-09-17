@@ -1,0 +1,10 @@
+{
+  "$comment": "One Lambda per resource. Read by build.mjs, src/dev.ts and infra/scripts. Routes are API Gateway REST resource paths; a function with no routes is not exposed over HTTP.",
+  "prefix": "roomres",
+  "defaults": { "runtime": "nodejs22.x", "memory": 512, "timeout": 15 },
+  "functions": [
+    { "name": "health", "routes": ["/api/health"], "memory": 256 },
+    { "name": "facilities", "routes": ["/api/facilities", "/api/facilities/{proxy+}"] },
+    { "name": "migrate", "routes": [], "timeout": 120 }
+  ]
+}
