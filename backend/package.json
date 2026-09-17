@@ -5,8 +5,13 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "type": "module",
+  "main": "dist/main.js",
   "scripts": {
     "build": "nest build",
+    "build:lambda": "node scripts/build-lambda.js",
+    "package:lambda": "npm run build:lambda && cd dist/lambda && zip -r function.zip .",
+    "deploy:local": "bash scripts/deploy-local.sh",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

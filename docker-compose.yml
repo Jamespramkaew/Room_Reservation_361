@@ -1,48 +1,86 @@
 services:
+  # PostgreSQL Database
   db:
     image: postgres:17-alpine
     container_name: cs361_db
     restart: unless-stopped
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: platform
-
     ports:
-      
       - "5432:5432"
-
     volumes:
-    
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d platform"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - localstack-network
 
+  # LocalStack - AWS Services Emulator (Lambda + API Gateway only)
+  # Using v2.3.2 (last community version before auth token requirement)
+  localstack:
+    image: localstack/localstack:2.3.2
+    container_name: cs361_localstack
+    restart: unless-stopped
+    ports:
+      - "4566:4566"            # LocalStack Gateway
+      - "4510-4559:4510-4559"  # External services port range
+    environment:
+      - SERVICES=lambda,apigateway,logs
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - LAMBDA_EXECUTOR=docker-reuse
+      - LAMBDA_REMOTE_DOCKER=false
+      - LAMBDA_DOCKER_NETWORK=room_reservation_361_localstack-network
+      - AWS_DEFAULT_REGION=ap-southeast-1
+      - PERSISTENCE=1
+      - DATA_DIR=/tmp/localstack/data
+      # Pass real AWS credentials for S3 access
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      # Force community version
+      - LOCALSTACK_API_KEY=
+    volumes:
+      - "./localstack-init:/etc/localstack/init/ready.d"  # Init scripts
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack-data:/tmp/localstack"
+    networks:
+      - localstack-network
+    depends_on:
+      db:
+        condition: service_healthy
 
+  # Prisma Studio (Optional - for database management)
   prisma-studio:
     image: node:22-alpine
-    container_name: cs361
+    container_name: cs361_prisma_studio
     working_dir: /app
     command: npx prisma studio --port 5555 --browser none
     ports:
       - "5555:5555"
     volumes:
-      - ./server:/app
+      - ./backend:/app
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/platform
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - localstack-network
     profiles:
-    
       - studio
 
 volumes:
   postgres_data:
     driver: local
+  localstack-data:
+    driver: local
+
+networks:
+  localstack-network:
+    driver: bridge
