@@ -224,11 +224,8 @@ API Gateway REST ไม่ยอมให้ path เดียวกันมี
 
 ## 9. ตอนขึ้น AWS จริงต่างจากนี้ยังไง
 
-โค้ดไม่ต้องแก้ ที่ต่างคือ
+โค้ดไม่ต้องแก้เลย ที่ต่างคือ database เปลี่ยนเป็น RDS, ต้องกรอกค่าใน `infra/env/aws.env` และคำสั่ง deploy เปลี่ยนเป็น `npm run deploy:aws`
 
-- database เปลี่ยนจาก container เป็น RDS และต้องต่อผ่าน VPC
-- ต้องใส่ค่า subnet, security group และ `DATABASE_URL` ของ RDS ใน `infra/env/aws.env`
-- migration รันโดยสั่ง `npm run migrate:aws` ซึ่งไปเรียกฟังก์ชัน `roomres-migrate` ให้รันจากข้างใน VPC เพราะเครื่องเราต่อ RDS ตรงๆ ไม่ได้
-- คำสั่ง deploy เปลี่ยนเป็น `npm run deploy:aws`
+รายละเอียดทั้งหมดอยู่ใน [AWS Deployment Guide (must read)](AWS-deployment-guide%28must-read%29.md) ซึ่งเขียนเป็นด่านให้ลองหาคำตอบเองทีละขั้น
 
-ปกติจะมีคนเดียวหรือสองคนในทีมที่ทำส่วนนี้ คนอื่นทำงานบน LocalStack พอ
+ปกติจะมีคนเดียวหรือสองคนในทีมที่ทำส่วนนี้ คนอื่นทำงานบน LocalStack พอ แต่แนะนำให้อ่านไว้ทุกคน
