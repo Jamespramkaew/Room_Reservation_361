@@ -5,10 +5,16 @@ Room Reservation &amp; Utilization Management System
 
 ระบบจองห้องและบริหารการใช้งานห้องเรียน (CS361 Project) — เว็บแอปพลิเคชันสำหรับให้นักศึกษาค้นหา/ดูรายละเอียดห้อง และให้ผู้ดูแลระบบจัดการข้อมูลห้อง อุปกรณ์ประจำห้อง รูปภาพห้อง และการจอง
 
-ประกอบด้วย 2 ส่วนหลักใน monorepo เดียว:
+ประกอบด้วยส่วนหลักใน monorepo เดียว:
 
-- **`backend/`** — REST API ด้วย NestJS 11 + Prisma 7 + PostgreSQL 17 + AWS S3
+- **`backend-lambda/`** — REST API ตัวปัจจุบัน ทำเป็น FaaS บน AWS Lambda ด้วย Hono + Drizzle + PostgreSQL ([README](backend-lambda/README.md))
+- **`infra/`** — สคริปต์ deploy ด้วย AWS CLI ใช้ได้ทั้ง LocalStack และ AWS จริง
 - **`frontend/`** — Single Page Application ด้วย React 19 + Vite + TypeScript + Tailwind CSS 4
+- **`archive/backend/`** — REST API ตัวเก่า (NestJS 11 + Prisma 7) เก็บไว้อ้างอิง business rule และ schema ไม่ได้ใช้งานแล้ว
+
+> เอกสารที่ต้องอ่านก่อนเริ่ม: [LocalStack](docs/LocalStack%28mustread%29.md) สำหรับทุกคน และ [AWS Deployment](docs/AWS-deployment-guide%28must-read%29.md) สำหรับคนที่เอาขึ้น AWS
+>
+> เนื้อหาส่วนที่เหลือของไฟล์นี้อธิบาย backend ตัวเก่าที่ย้ายไป `archive/backend/` แล้ว path ในเอกสารจึงต้องเติม `archive/` ข้างหน้า
 
 ---
 
@@ -70,7 +76,7 @@ Room Reservation &amp; Utilization Management System
 ```
 Room_Reservation_361/
 ├── docker-compose.yml            # PostgreSQL 17 + Prisma Studio (profile: studio)
-├── backend/
+├── archive/backend/
 │   ├── prisma/
 │   │   ├── schema.prisma         # นิยาม data model ทั้งหมด
 │   │   ├── migrations/           # 3 migrations

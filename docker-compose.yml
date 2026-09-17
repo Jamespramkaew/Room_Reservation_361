@@ -50,7 +50,7 @@ services:
     ports:
       - "5555:5555"
     volumes:
-      - ./backend:/app
+      - ./archive/backend:/app
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/platform
     depends_on:
