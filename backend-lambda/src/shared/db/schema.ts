@@ -13,7 +13,7 @@ export const bookingType = pgEnum('BookingType', ['CLASS', 'SCHEDULE', 'SPECIAL_
 export const bookingStatus = pgEnum('BookingStatus', ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']);
 
 const id = () => text('id').primaryKey().$defaultFn(() => randomUUID());
-const ts = (name: string) => timestamp(name, { precision: 3, mode: 'date' });
+const ts = (name: string) => timestamp(name, { precision: 3, mode: 'date', withTimezone: true });
 const createdAt = () => ts('created_at').default(sql`CURRENT_TIMESTAMP`).notNull();
 // No DB default (same as Prisma @updatedAt); Drizzle fills it on insert and update.
 const updatedAt = () =>
