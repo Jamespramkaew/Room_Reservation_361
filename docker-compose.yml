@@ -3,46 +3,70 @@ services:
     image: postgres:17-alpine
     container_name: cs361_db
     restart: unless-stopped
-
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: platform
-
     ports:
-      
-      - "5432:5432"
-
+      # Override DB_HOST_PORT in .env if 5432 is already taken on your machine
+      - "127.0.0.1:${DB_HOST_PORT:-5432}:5432"
     volumes:
-    
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d platform"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - roomres_net
 
+  # LocalStack (Lambda + API Gateway REST + S3). Needs a free Hobby account token since 2026.03.
+  localstack:
+    image: localstack/localstack:2026.3.0
+    container_name: cs361_localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      # Not required with :? so `docker compose up -d db` still works without a token
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
+      - DEBUG=${LOCALSTACK_DEBUG:-0}
+      # Lambda containers join this network so they can reach Postgres at db:5432
+      - LAMBDA_DOCKER_NETWORK=roomres_net
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "localstack_data:/var/lib/localstack"
+    networks:
+      - roomres_net
+    depends_on:
+      db:
+        condition: service_healthy
 
   prisma-studio:
     image: node:22-alpine
-    container_name: cs361
+    container_name: cs361_prisma_studio
     working_dir: /app
     command: npx prisma studio --port 5555 --browser none
     ports:
       - "5555:5555"
     volumes:
-      - ./server:/app
+      - ./archive/backend:/app
     environment:
       DATABASE_URL: postgresql://postgres:password@db:5432/platform
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - roomres_net
     profiles:
-    
       - studio
 
 volumes:
   postgres_data:
     driver: local
+  localstack_data:
+    driver: local
+
+networks:
+  roomres_net:
+    name: roomres_net
