@@ -1,0 +1,1 @@
+ALTER TYPE "public"."RoomType" ADD VALUE 'COWORKING';

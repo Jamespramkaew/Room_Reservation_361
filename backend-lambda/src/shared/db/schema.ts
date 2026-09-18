@@ -8,7 +8,7 @@ import { sql } from 'drizzle-orm';
 export const userRole = pgEnum('UserRole', ['STUDENT', 'ADMIN']);
 export const roomStatus = pgEnum('RoomStatus', ['AVAILABLE', 'MAINTENANCE', 'RESERVED']);
 export const roomSize = pgEnum('RoomSize', ['SMALL', 'MEDIUM', 'LARGE']);
-export const roomType = pgEnum('RoomType', ['LAB', 'LECTURE', 'MEETING']);
+export const roomType = pgEnum('RoomType', ['LAB', 'LECTURE', 'MEETING', 'COWORKING']);
 export const bookingType = pgEnum('BookingType', ['CLASS', 'SCHEDULE', 'SPECIAL_EVENT', 'STUDENT_BOOKING']);
 export const bookingStatus = pgEnum('BookingStatus', ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']);
 
