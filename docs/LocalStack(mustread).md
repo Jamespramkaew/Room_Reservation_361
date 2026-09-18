@@ -19,6 +19,14 @@ LocalStack คือตัวจำลอง AWS ที่รันใน Docker
 | 4 | LocalStack auth token | สมัครแผน Hobby ฟรีที่ https://app.localstack.cloud แล้ว copy token จากหน้า workspace |
 
 Windows ให้ทำทุกอย่างใน WSL เพราะสคริปต์เป็น bash
+```
+node -v          # ต้อง 20+
+docker --version # ต้องเปิด Docker Desktop อยู่ + เปิด WSL integration
+aws --version    # AWS CLI v2 (ไม่ต้อง aws configure)
+jq --version
+zip -v | head -1
+```
+แล้วไปสมัคร LocalStack แผน Hobby (ฟรี) ที่ https://app.localstack.cloud → copy auth token จากหน้า workspace
 
 ---
 
