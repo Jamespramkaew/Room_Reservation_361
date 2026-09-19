@@ -15,7 +15,7 @@ await db
   ])
   .onConflictDoNothing({ target: users.username });
 
-const facilityNames = ['Projector', 'Whiteboard', 'Air Conditioner', 'Computer'];
+const facilityNames = ['คอมพิวเตอร์', 'โปรเจกเตอร์', 'ไมโครโฟน', 'ไวท์บอร์ด', 'เครื่องปรับอากาศ'];
 await db
   .insert(facilities)
   .values(facilityNames.map((name) => ({ name })))
@@ -24,9 +24,13 @@ await db
 await db
   .insert(rooms)
   .values([
-    { roomName: 'LAB-101', description: 'Computer laboratory with 30 workstations', seatCapacity: 30, status: 'AVAILABLE', size: 'LARGE', roomType: 'LAB' },
-    { roomName: 'LECTURE-201', description: 'Lecture hall for 100 students', seatCapacity: 100, status: 'AVAILABLE', size: 'LARGE', roomType: 'LECTURE' },
-    { roomName: 'MEETING-301', description: 'Small meeting room for discussions', seatCapacity: 10, status: 'AVAILABLE', size: 'SMALL', roomType: 'MEETING' },
+    { roomName: 'LC-101', description: 'ห้องเรียนสำหรับทำกิจกรรมแล็บในรายวิชา', seatCapacity: 39, status: 'AVAILABLE', size: 'LARGE', roomType: 'LAB' },
+    { roomName: 'LC-102', description: 'ห้องเรียนสำหรับทำกิจกรรมแล็บในรายวิชา', seatCapacity: 67, status: 'AVAILABLE', size: 'LARGE', roomType: 'LAB' },
+    { roomName: 'LC-103', description: 'ห้องบรรยายขนาดกลาง', seatCapacity: 39, status: 'AVAILABLE', size: 'MEDIUM', roomType: 'LECTURE' },
+    { roomName: 'LC-104', description: 'ห้องบรรยายขนาดกลาง', seatCapacity: 40, status: 'AVAILABLE', size: 'MEDIUM', roomType: 'LECTURE' },
+    { roomName: 'LC-105', description: 'ห้องบรรยายขนาดเล็ก', seatCapacity: 30, status: 'MAINTENANCE', size: 'SMALL', roomType: 'LECTURE' },
+    { roomName: 'LC-106', description: 'ห้องประชุมกลุ่มย่อย', seatCapacity: 12, status: 'AVAILABLE', size: 'SMALL', roomType: 'MEETING' },
+    { roomName: 'Co-working Space', description: 'พื้นที่ทำงานร่วมกัน เหมาะสำหรับนั่งทำงานและอ่านหนังสือ', seatCapacity: 50, status: 'AVAILABLE', size: 'LARGE', roomType: 'COWORKING' },
   ])
   .onConflictDoNothing({ target: rooms.roomName });
 
@@ -38,26 +42,50 @@ const roomId = Object.fromEntries((await db.select().from(rooms)).map((r) => [r.
 await db
   .insert(roomFacilities)
   .values([
-    { roomId: roomId['LAB-101'], facilityId: facilityId['Projector'], quantity: 1, sortOrder: 1 },
-    { roomId: roomId['LAB-101'], facilityId: facilityId['Whiteboard'], quantity: 2, sortOrder: 2 },
-    { roomId: roomId['LAB-101'], facilityId: facilityId['Air Conditioner'], quantity: 2, sortOrder: 3 },
-    { roomId: roomId['LAB-101'], facilityId: facilityId['Computer'], quantity: 30, sortOrder: 4 },
-    { roomId: roomId['LECTURE-201'], facilityId: facilityId['Projector'], quantity: 2, sortOrder: 1 },
-    { roomId: roomId['LECTURE-201'], facilityId: facilityId['Whiteboard'], quantity: 3, sortOrder: 2 },
-    { roomId: roomId['LECTURE-201'], facilityId: facilityId['Air Conditioner'], quantity: 4, sortOrder: 3 },
-    { roomId: roomId['MEETING-301'], facilityId: facilityId['Projector'], quantity: 1, sortOrder: 1 },
-    { roomId: roomId['MEETING-301'], facilityId: facilityId['Whiteboard'], quantity: 1, sortOrder: 2 },
-    { roomId: roomId['MEETING-301'], facilityId: facilityId['Air Conditioner'], quantity: 1, sortOrder: 3 },
+    { roomId: roomId['LC-101'], facilityId: facilityId['คอมพิวเตอร์'], quantity: 39, sortOrder: 1 },
+    { roomId: roomId['LC-101'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 1, sortOrder: 2 },
+    { roomId: roomId['LC-101'], facilityId: facilityId['ไมโครโฟน'], quantity: 2, sortOrder: 3 },
+    { roomId: roomId['LC-101'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 4 },
+    { roomId: roomId['LC-101'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 3, sortOrder: 5 },
+
+    { roomId: roomId['LC-102'], facilityId: facilityId['คอมพิวเตอร์'], quantity: 67, sortOrder: 1 },
+    { roomId: roomId['LC-102'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 2, sortOrder: 2 },
+    { roomId: roomId['LC-102'], facilityId: facilityId['ไมโครโฟน'], quantity: 2, sortOrder: 3 },
+    { roomId: roomId['LC-102'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 4 },
+    { roomId: roomId['LC-102'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 3, sortOrder: 5 },
+
+    { roomId: roomId['LC-103'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 1, sortOrder: 1 },
+    { roomId: roomId['LC-103'], facilityId: facilityId['ไมโครโฟน'], quantity: 2, sortOrder: 2 },
+    { roomId: roomId['LC-103'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 3 },
+    { roomId: roomId['LC-103'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 2, sortOrder: 4 },
+
+    { roomId: roomId['LC-104'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 1, sortOrder: 1 },
+    { roomId: roomId['LC-104'], facilityId: facilityId['ไมโครโฟน'], quantity: 1, sortOrder: 2 },
+    { roomId: roomId['LC-104'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 3 },
+    { roomId: roomId['LC-104'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 2, sortOrder: 4 },
+
+    { roomId: roomId['LC-105'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 1, sortOrder: 1 },
+    { roomId: roomId['LC-105'], facilityId: facilityId['ไมโครโฟน'], quantity: 1, sortOrder: 2 },
+    { roomId: roomId['LC-105'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 3 },
+    { roomId: roomId['LC-105'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 1, sortOrder: 4 },
+
+    { roomId: roomId['LC-106'], facilityId: facilityId['โปรเจกเตอร์'], quantity: 1, sortOrder: 1 },
+    { roomId: roomId['LC-106'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 1, sortOrder: 2 },
+    { roomId: roomId['LC-106'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 1, sortOrder: 3 },
+
+    { roomId: roomId['Co-working Space'], facilityId: facilityId['ไวท์บอร์ด'], quantity: 2, sortOrder: 1 },
+    { roomId: roomId['Co-working Space'], facilityId: facilityId['เครื่องปรับอากาศ'], quantity: 3, sortOrder: 2 },
   ])
   .onConflictDoNothing({ target: [roomFacilities.roomId, roomFacilities.facilityId] });
+
 
 // Photos and bookings have no natural unique key: only seed them into an empty table
 const [anyPhoto] = await db.select({ id: roomPhotos.id }).from(roomPhotos).limit(1);
 if (!anyPhoto) {
   await db.insert(roomPhotos).values([
-    { roomId: roomId['LAB-101'], objectKey: 'rooms/lab-101/photo1.jpg', caption: 'Computer lab overview', sortOrder: 1 },
-    { roomId: roomId['LECTURE-201'], objectKey: 'rooms/lecture-201/photo1.jpg', caption: 'Lecture hall view', sortOrder: 1 },
-    { roomId: roomId['MEETING-301'], objectKey: 'rooms/meeting-301/photo1.jpg', caption: 'Meeting room setup', sortOrder: 1 },
+    { roomId: roomId['LC-101'], objectKey: 'rooms/lab-101/photo1.jpg', caption: 'Computer lab overview', sortOrder: 1 },
+    { roomId: roomId['LC-103'], objectKey: 'rooms/lecture-201/photo1.jpg', caption: 'Lecture hall view', sortOrder: 1 },
+    { roomId: roomId['LC-106'], objectKey: 'rooms/meeting-301/photo1.jpg', caption: 'Meeting room setup', sortOrder: 1 },
   ]);
 }
 
@@ -68,8 +96,8 @@ if (!anyBooking) {
   const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const hours = (h: number) => new Date(start.getTime() + h * 60 * 60 * 1000);
   await db.insert(bookings).values([
-    { userId: student1.id, roomId: roomId['LAB-101'], bookingType: 'STUDENT_BOOKING', title: 'Study group session', startTime: start, endTime: hours(2), status: 'APPROVED' },
-    { userId: student2.id, roomId: roomId['LECTURE-201'], bookingType: 'CLASS', title: 'CS101 lecture', startTime: start, endTime: hours(3) },
+    { userId: student1.id, roomId: roomId['LC-101'], bookingType: 'STUDENT_BOOKING', title: 'Study group session', startTime: start, endTime: hours(2), status: 'APPROVED' },
+    { userId: student2.id, roomId: roomId['LC-103'], bookingType: 'CLASS', title: 'CS101 lecture', startTime: start, endTime: hours(3) },
   ]);
 }
 
