@@ -15,6 +15,7 @@
     "db:studio": "drizzle-kit studio",
     "deploy:local": "bash ../infra/scripts/deploy.sh local",
     "deploy:aws": "bash ../infra/scripts/deploy.sh aws",
+    "photos:local": "bash ../infra/scripts/photos.sh local",
     "migrate:local": "bash ../infra/scripts/migrate.sh local",
     "migrate:aws": "bash ../infra/scripts/migrate.sh aws",
     "destroy:local": "bash ../infra/scripts/destroy.sh local"
