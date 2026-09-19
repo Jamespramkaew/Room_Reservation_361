@@ -6,6 +6,9 @@ import { foreignKey, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } fr
 import { sql } from 'drizzle-orm';
 
 export const userRole = pgEnum('UserRole', ['STUDENT', 'ADMIN']);
+// Whether the room can be booked at all (AVAILABLE = open, MAINTENANCE = closed).
+// Free/busy for a time slot comes from Booking, not from this column.
+// RESERVED is unused: kept only because Postgres cannot drop an enum value easily.
 export const roomStatus = pgEnum('RoomStatus', ['AVAILABLE', 'MAINTENANCE', 'RESERVED']);
 export const roomSize = pgEnum('RoomSize', ['SMALL', 'MEDIUM', 'LARGE']);
 export const roomType = pgEnum('RoomType', ['LAB', 'LECTURE', 'MEETING', 'COWORKING']);
