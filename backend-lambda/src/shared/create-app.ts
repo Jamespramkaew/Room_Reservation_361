@@ -5,7 +5,7 @@ import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception';
 import { logger } from 'hono/logger';
 import { getEnv } from './env';
-import { HttpError, isUniqueViolation } from './http/errors';
+import { fromDbError, HttpError } from './http/errors';
 import { errorResponse } from './http/response';
 
 export type AppEnv = {
@@ -43,9 +43,27 @@ export function createApp(basePath: `/${string}`) {
   app.onError((err, c) => {
     if (err instanceof HttpError) return c.json(errorResponse(err.details), err.status);
     if (err instanceof HTTPException) return c.json(errorResponse(err.message), err.status);
-    if (isUniqueViolation(err)) return c.json(errorResponse('Resource already exists'), 409);
 
-    console.error(JSON.stringify({ requestId: c.get('requestId'), error: String(err), stack: err.stack }));
+    const log = (level: 'warn' | 'error') =>
+      console[level](
+        JSON.stringify({
+          requestId: c.get('requestId'),
+          method: c.req.method,
+          path: c.req.path,
+          error: String(err),
+          cause: err.cause === undefined ? undefined : String(err.cause),
+          stack: err.stack,
+        }),
+      );
+
+    const dbError = fromDbError(err);
+    if (dbError) {
+      // Bad input is the client's problem; an unreachable or slow database is ours
+      log(dbError.status >= 500 ? 'error' : 'warn');
+      return c.json(errorResponse(dbError.details), dbError.status);
+    }
+
+    log('error');
     return c.json(errorResponse('Internal server error'), 500);
   });
 
