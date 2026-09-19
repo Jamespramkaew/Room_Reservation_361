@@ -5,6 +5,7 @@
   "functions": [
     { "name": "health", "routes": ["/api/health"], "memory": 256 },
     { "name": "facilities", "routes": ["/api/facilities", "/api/facilities/{proxy+}"] },
+    { "name": "rooms", "routes": ["/api/rooms", "/api/rooms/{proxy+}"] },
     { "name": "migrate", "routes": [], "timeout": 120 }
   ]
 }
