@@ -1,6 +1,6 @@
 // Idempotent sample data: safe to run more than once.
 import bcrypt from 'bcryptjs';
-import { eq, inArray } from 'drizzle-orm';
+import { inArray } from 'drizzle-orm';
 import { getDb } from '../../src/shared/db/client';
 import { bookings, facilities, roomFacilities, roomPhotos, rooms, users } from '../../src/shared/db/schema';
 
@@ -115,15 +115,43 @@ if (!anyPhoto) {
 
 const [anyBooking] = await db.select({ id: bookings.id }).from(bookings).limit(1);
 if (!anyBooking) {
-  const [student1] = await db.select().from(users).where(eq(users.username, 'student1'));
-  const [student2] = await db.select().from(users).where(eq(users.username, 'student2'));
-  const start = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const hours = (h: number) => new Date(start.getTime() + h * 60 * 60 * 1000);
+  const userId = Object.fromEntries((await db.select().from(users)).map((u) => [u.username, u.id]));
+
+  // Monday of next week in Bangkok time, so the sample schedule is always in the future
+  const bangkokNow = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  const daysToMonday = (8 - bangkokNow.getUTCDay()) % 7 || 7;
+  const monday = new Date(
+    Date.UTC(bangkokNow.getUTCFullYear(), bangkokNow.getUTCMonth(), bangkokNow.getUTCDate() + daysToMonday),
+  );
+  // at(0, '09:00') = next Monday 09:00 Bangkok time; at(4, ...) = Friday
+  const at = (day: number, time: string) =>
+    new Date(`${new Date(monday.getTime() + day * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)}T${time}:00+07:00`);
+
   await db.insert(bookings).values([
-    { userId: student1.id, roomId: roomId['LC-101'], bookingType: 'STUDENT_BOOKING', title: 'Study group session', startTime: start, endTime: hours(2), status: 'APPROVED' },
-    { userId: student2.id, roomId: roomId['LC-103'], bookingType: 'CLASS', title: 'CS101 lecture', startTime: start, endTime: hours(3) },
+    // Monday
+    { userId: userId['admin'], roomId: roomId['LC-101'], bookingType: 'CLASS', title: 'CS101 ปฏิบัติการ', startTime: at(0, '09:00'), endTime: at(0, '12:00'), status: 'APPROVED' },
+    { userId: userId['admin'], roomId: roomId['LC-103'], bookingType: 'CLASS', title: 'CS102 บรรยาย', startTime: at(0, '09:00'), endTime: at(0, '12:00'), status: 'APPROVED' },
+    { userId: userId['admin'], roomId: roomId['LC-101'], bookingType: 'CLASS', title: 'CS201 ปฏิบัติการ', startTime: at(0, '13:00'), endTime: at(0, '16:00'), status: 'APPROVED' },
+    { userId: userId['student1'], roomId: roomId['LC-106'], bookingType: 'STUDENT_BOOKING', title: 'ประชุมโปรเจกต์กลุ่ม', startTime: at(0, '10:00'), endTime: at(0, '12:00'), status: 'APPROVED' },
+    { userId: userId['student2'], roomId: roomId['LC-106'], bookingType: 'STUDENT_BOOKING', title: 'นัดพบอาจารย์ที่ปรึกษา', startTime: at(0, '12:00'), endTime: at(0, '13:00'), status: 'APPROVED' },
+    // Tuesday
+    { userId: userId['admin'], roomId: roomId['LC-102'], bookingType: 'CLASS', title: 'CS211 ปฏิบัติการ', startTime: at(1, '09:00'), endTime: at(1, '12:00'), status: 'APPROVED' },
+    { userId: userId['admin'], roomId: roomId['LC-104'], bookingType: 'CLASS', title: 'CS213 บรรยาย', startTime: at(1, '13:00'), endTime: at(1, '16:00'), status: 'APPROVED' },
+    { userId: userId['admin'], roomId: roomId['Co-working Space'], bookingType: 'SPECIAL_EVENT', title: 'Workshop Cloud เบื้องต้น', startTime: at(1, '13:00'), endTime: at(1, '17:00'), status: 'APPROVED' },
+    // Wednesday
+    { userId: userId['admin'], roomId: roomId['LC-101'], bookingType: 'CLASS', title: 'CS101 ปฏิบัติการ', startTime: at(2, '09:00'), endTime: at(2, '12:00'), status: 'APPROVED' },
+    { userId: userId['student2'], roomId: roomId['LC-103'], bookingType: 'STUDENT_BOOKING', title: 'ติวสอบกลางภาค', startTime: at(2, '15:00'), endTime: at(2, '17:00'), status: 'PENDING' },
+    { userId: userId['student1'], roomId: roomId['LC-106'], bookingType: 'STUDENT_BOOKING', title: 'ประชุมชมรม', startTime: at(2, '16:00'), endTime: at(2, '18:00'), status: 'CANCELLED', cancelledBy: userId['student1'], cancelReason: 'เลื่อนการประชุม', cancelledAt: new Date() },
+    // Thursday
+    { userId: userId['admin'], roomId: roomId['LC-102'], bookingType: 'CLASS', title: 'CS211 ปฏิบัติการ', startTime: at(3, '09:00'), endTime: at(3, '12:00'), status: 'APPROVED' },
+    { userId: userId['student2'], roomId: roomId['LC-104'], bookingType: 'STUDENT_BOOKING', title: 'อ่านหนังสือกลุ่ม', startTime: at(3, '13:00'), endTime: at(3, '15:00'), status: 'REJECTED' },
+    { userId: userId['student1'], roomId: roomId['LC-104'], bookingType: 'STUDENT_BOOKING', title: 'ซ้อมนำเสนองาน', startTime: at(3, '14:00'), endTime: at(3, '16:00'), status: 'APPROVED' },
+    // Friday
+    { userId: userId['admin'], roomId: roomId['LC-103'], bookingType: 'CLASS', title: 'CS102 บรรยาย', startTime: at(4, '09:00'), endTime: at(4, '12:00'), status: 'APPROVED' },
+    { userId: userId['admin'], roomId: roomId['LC-102'], bookingType: 'SCHEDULE', title: 'สอบปฏิบัติ CS211', startTime: at(4, '13:00'), endTime: at(4, '16:00'), status: 'APPROVED' },
   ]);
 }
+
 
 console.log('Seed complete. Logins: admin/admin123, student1/password123, student2/password123');
 process.exit(0);
