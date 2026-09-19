@@ -20,6 +20,7 @@ log "target=$TARGET account=$ACCOUNT_ID region=$REGION functions: $(echo "$FUNCT
 (cd "$LAMBDA_DIR" && node build.mjs $FUNCTIONS)
 
 ensure_bucket
+sync_photos
 
 for fn in $FUNCTIONS; do
   role_arn="$(ensure_role "$fn")"
