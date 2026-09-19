@@ -82,10 +82,34 @@ await db
 // Photos and bookings have no natural unique key: only seed them into an empty table
 const [anyPhoto] = await db.select({ id: roomPhotos.id }).from(roomPhotos).limit(1);
 if (!anyPhoto) {
-  await db.insert(roomPhotos).values([
-    { roomId: roomId['LC-101'], objectKey: 'rooms/lab-101/photo1.jpg', caption: 'Computer lab overview', sortOrder: 1 },
-    { roomId: roomId['LC-103'], objectKey: 'rooms/lecture-201/photo1.jpg', caption: 'Lecture hall view', sortOrder: 1 },
-    { roomId: roomId['LC-106'], objectKey: 'rooms/meeting-301/photo1.jpg', caption: 'Meeting room setup', sortOrder: 1 },
+    await db.insert(roomPhotos).values([
+    { roomId: roomId['LC-101'], objectKey: 'Room1.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-101'], objectKey: 'Room1-1.jpg', sortOrder: 2 },
+    { roomId: roomId['LC-101'], objectKey: 'Room1-2.jpg', sortOrder: 3 },
+
+    { roomId: roomId['LC-102'], objectKey: 'Room102.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-102'], objectKey: 'Room105(4).jpg', sortOrder: 2 },
+    { roomId: roomId['LC-102'], objectKey: 'Room106.jpg', sortOrder: 3 },
+
+    { roomId: roomId['LC-103'], objectKey: 'lec1.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-103'], objectKey: 'lec4.jpg', sortOrder: 2 },
+    { roomId: roomId['LC-103'], objectKey: 'lec5.jpg', sortOrder: 3 },
+
+    { roomId: roomId['LC-104'], objectKey: 'lec2.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-104'], objectKey: 'lec4.jpg', sortOrder: 2 },
+    { roomId: roomId['LC-104'], objectKey: 'lec5.jpg', sortOrder: 3 },
+
+    { roomId: roomId['LC-105'], objectKey: 'lec3.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-105'], objectKey: 'lec4.jpg', sortOrder: 2 },
+    { roomId: roomId['LC-105'], objectKey: 'lec5.jpg', sortOrder: 3 },
+
+    { roomId: roomId['LC-106'], objectKey: 'meet1.jpg', sortOrder: 1 },
+    { roomId: roomId['LC-106'], objectKey: 'meet2.jpg', sortOrder: 2 },
+    { roomId: roomId['LC-106'], objectKey: 'meet3.jpg', sortOrder: 3 },
+
+    { roomId: roomId['Co-working Space'], objectKey: 'co-working.jpg', sortOrder: 1 },
+    { roomId: roomId['Co-working Space'], objectKey: 'co2.png', sortOrder: 2 },
+    { roomId: roomId['Co-working Space'], objectKey: 'co3.jpg', sortOrder: 3 },
   ]);
 }
 
