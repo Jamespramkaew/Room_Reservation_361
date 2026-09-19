@@ -6,14 +6,17 @@ import { foreignKey, integer, pgEnum, pgTable, text, timestamp, uniqueIndex } fr
 import { sql } from 'drizzle-orm';
 
 export const userRole = pgEnum('UserRole', ['STUDENT', 'ADMIN']);
+// Whether the room can be booked at all (AVAILABLE = open, MAINTENANCE = closed).
+// Free/busy for a time slot comes from Booking, not from this column.
+// RESERVED is unused: kept only because Postgres cannot drop an enum value easily.
 export const roomStatus = pgEnum('RoomStatus', ['AVAILABLE', 'MAINTENANCE', 'RESERVED']);
 export const roomSize = pgEnum('RoomSize', ['SMALL', 'MEDIUM', 'LARGE']);
-export const roomType = pgEnum('RoomType', ['LAB', 'LECTURE', 'MEETING']);
+export const roomType = pgEnum('RoomType', ['LAB', 'LECTURE', 'MEETING', 'COWORKING']);
 export const bookingType = pgEnum('BookingType', ['CLASS', 'SCHEDULE', 'SPECIAL_EVENT', 'STUDENT_BOOKING']);
 export const bookingStatus = pgEnum('BookingStatus', ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED']);
 
 const id = () => text('id').primaryKey().$defaultFn(() => randomUUID());
-const ts = (name: string) => timestamp(name, { precision: 3, mode: 'date' });
+const ts = (name: string) => timestamp(name, { precision: 3, mode: 'date', withTimezone: true });
 const createdAt = () => ts('created_at').default(sql`CURRENT_TIMESTAMP`).notNull();
 // No DB default (same as Prisma @updatedAt); Drizzle fills it on insert and update.
 const updatedAt = () =>
