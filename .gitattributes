@@ -1,0 +1,14 @@
+# ให้ทุกไฟล์ข้อความเป็น LF ใน working tree ทุก OS
+# กัน core.autocrlf=true ของ Git for Windows แปลงไฟล์จน bash/WSL รันไม่ได้
+* text=auto eol=lf
+
+# สคริปต์ที่ต้องรันด้วย bash: บังคับ LF เสมอ ห้ามเดา
+*.sh text eol=lf
+
+# ไฟล์ไบนารี: ห้ามแตะ end-of-line
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
