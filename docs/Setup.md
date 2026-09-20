@@ -49,6 +49,7 @@ cd backend-lambda
 npm install # เคยลงตอน Node 18 หรือลงจากฝั่ง Windows ให้ rm -rf node_modules ก่อน
 npm run db:migrate # สร้างตาราง
 npm run db:seed # ข้อมูลตัวอย่าง (rooms, facilities, bookings)
+npm run photos:local #photo seed to S3
 
 cd ../frontend && npm install
 ```
@@ -69,4 +70,10 @@ cd frontend && npm run dev # http://localhost:5173
 docker compose up -d # ที่ root — ขึ้น localstack ด้วย
 cd backend-lambda && npm run deploy:local # ต้องรันใหม่ทุกครั้งที่เปิด docker
 curl http://roomres.execute-api.localhost.localstack.cloud:4566/dev/api/health
+```
+
+## Extra : ถ้า database มีการเปลี่ยนแปลงให้รันคําสั่งนี้
+```
+cd backend-lambda
+npm run db:fresh    
 ```
