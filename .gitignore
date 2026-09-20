@@ -1,3 +1,13 @@
 .env
 volume/
 infra/env/aws.env
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Variables files (ถ้ามีรหัสผ่าน)
+*.tfvars
