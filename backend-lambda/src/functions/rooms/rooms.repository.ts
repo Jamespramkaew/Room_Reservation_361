@@ -1,10 +1,105 @@
-import { and, asc, eq, isNull } from 'drizzle-orm';
+import { and, asc, eq, exists, gt, gte, ilike, inArray, isNull, lt, notExists } from 'drizzle-orm';
 import { getDb } from '../../shared/db/client';
-import { roomFacilities, roomPhotos, rooms } from '../../shared/db/schema';
+import { bookings, facilities, roomFacilities, roomPhotos, rooms } from '../../shared/db/schema';
 
-function findAllWithDetails() {
-  return getDb().query.rooms.findMany({
-    where: isNull(rooms.deletedAt),
+export interface RoomFilters {
+  q?: string;
+  roomTypes?: Array<'LAB' | 'LECTURE' | 'MEETING' | 'COWORKING'>;
+  /** DB-side facility names (Thai), each must have quantity >= 1 */
+  facilityNames?: string[];
+  start?: Date;
+  end?: Date;
+}
+
+async function findAllWithDetails(filters: RoomFilters = {}) {
+  const { q, roomTypes, facilityNames, start, end } = filters;
+  const db = getDb();
+
+  // --- Step 1: collect matching room IDs via scalar SELECT ---
+  // db.query (Relational API) does not support correlated subqueries in `where`,
+  // so we resolve the filter conditions separately and pass the resulting IDs in.
+  const hasSubqueryFilter =
+    (facilityNames && facilityNames.length > 0) || (start !== undefined && end !== undefined);
+
+  let allowedIds: string[] | null = null;
+
+  if (hasSubqueryFilter) {
+    // Build WHERE conditions for the ID-only query
+    const idConditions = [isNull(rooms.deletedAt)];
+
+    if (q) idConditions.push(ilike(rooms.roomName, `%${q}%`));
+    if (roomTypes && roomTypes.length > 0) idConditions.push(inArray(rooms.roomType, roomTypes));
+
+    // Each required facility → correlated EXISTS subquery
+    if (facilityNames && facilityNames.length > 0) {
+      for (const name of facilityNames) {
+        idConditions.push(
+          exists(
+            db
+              .select({ one: roomFacilities.id })
+              .from(roomFacilities)
+              .innerJoin(facilities, eq(roomFacilities.facilityId, facilities.id))
+              .where(
+                and(
+                  eq(roomFacilities.roomId, rooms.id),
+                  isNull(roomFacilities.deletedAt),
+                  isNull(facilities.deletedAt),
+                  eq(facilities.name, name),
+                  gte(roomFacilities.quantity, 1),
+                ),
+              ),
+          ),
+        );
+      }
+    }
+
+    if (start && end) {
+      // Only AVAILABLE rooms can be booked
+      idConditions.push(eq(rooms.status, 'AVAILABLE'));
+
+      // No overlapping PENDING or APPROVED bookings
+      // Overlap: booking.start_time < end AND booking.end_time > start
+      idConditions.push(
+        notExists(
+          db
+            .select({ one: bookings.id })
+            .from(bookings)
+            .where(
+              and(
+                eq(bookings.roomId, rooms.id),
+                inArray(bookings.status, ['PENDING', 'APPROVED']),
+                lt(bookings.startTime, end),
+                gt(bookings.endTime, start),
+              ),
+            ),
+        ),
+      );
+    }
+
+    const rows = await db
+      .select({ id: rooms.id })
+      .from(rooms)
+      .where(and(...idConditions));
+
+    allowedIds = rows.map((r) => r.id);
+
+    // No rooms matched — skip the relational query
+    if (allowedIds.length === 0) return [];
+  }
+
+  // --- Step 2: relational query with eager-loaded relations ---
+  // Simple scalar conditions can go directly into where; subquery results come as inArray
+  const relConditions = [isNull(rooms.deletedAt)];
+
+  if (!hasSubqueryFilter) {
+    if (q) relConditions.push(ilike(rooms.roomName, `%${q}%`));
+    if (roomTypes && roomTypes.length > 0) relConditions.push(inArray(rooms.roomType, roomTypes));
+  } else if (allowedIds !== null) {
+    relConditions.push(inArray(rooms.id, allowedIds));
+  }
+
+  return db.query.rooms.findMany({
+    where: and(...relConditions),
     orderBy: asc(rooms.roomName),
     with: {
       roomFacilities: {
