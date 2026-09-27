@@ -20,6 +20,10 @@ Parameters:
   StageName:
     Type: String
     Default: dev
+  S3PublicUrl:
+    Type: String
+    Default: https://roomreserve-image-private.s3.ap-southeast-1.amazonaws.com
+    Description: Base URL that room photo object keys are appended to.
 
 Globals:
   Function:
@@ -35,6 +39,7 @@ Globals:
         STAGE: !Ref StageName
         DATABASE_URL: !Ref DatabaseUrl
         ALLOWED_ORIGINS: !Ref AllowedOrigins
+        S3_PUBLIC_URL: !Ref S3PublicUrl
 
 Resources:
   FacilitiesApi:
@@ -67,6 +72,87 @@ Resources:
             RestApiId: !Ref FacilitiesApi
             Path: /api/facilities/{proxy+}
             Method: ANY
+
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub roomres-health-${StageName}
+      CodeUri: dist/health/
+      Handler: index.handler
+      MemorySize: 256
+      Description: Health check including a database ping.
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+      Events:
+        Health:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/health
+            Method: ANY
+
+  RoomsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub roomres-rooms-${StageName}
+      CodeUri: dist/rooms/
+      Handler: index.handler
+      Description: Rooms list and detail API.
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+      Events:
+        RoomsCollection:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/rooms
+            Method: ANY
+        RoomsItems:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/rooms/{proxy+}
+            Method: ANY
+
+  BookingsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub roomres-bookings-${StageName}
+      CodeUri: dist/bookings/
+      Handler: index.handler
+      Description: Bookings by date range API.
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+      Events:
+        BookingsCollection:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/bookings
+            Method: ANY
+        BookingsItems:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/bookings/{proxy+}
+            Method: ANY
+
+  # Not behind API Gateway. Run migrations with:
+  #   aws lambda invoke --function-name roomres-migrate-<stage> --payload '{}' out.json
+  MigrateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub roomres-migrate-${StageName}
+      CodeUri: dist/migrate/
+      Handler: index.handler
+      Timeout: 120
+      Description: Runs Drizzle migrations against the VPC database.
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
 
   # Copy this resource when adding another Lambda. Globals.Function already
   # supplies the VPC config, runtime, timeout, memory, and shared environment.
