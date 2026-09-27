@@ -2,15 +2,17 @@ import { z } from 'zod';
 
 const BOOKING_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'] as const;
 
-// Validates YYYY-MM-DD and rejects non-existent dates like 2026-02-30
+// Validates YYYY-MM-DD and rejects non-existent dates like 2026-02-30.
+// (Lambda runs TZ=UTC; local dev may run TZ=Asia/Bangkok).
 const dateString = z.string().refine(
   (s) => {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
-    const d = new Date(`${s}T00:00:00+07:00`);
-    // If the month overflows (e.g. Feb 30 → Mar 2), the parsed month will differ
-    return d.getFullYear() === Number(s.slice(0, 4)) &&
-      d.getMonth() + 1 === Number(s.slice(5, 7)) &&
-      d.getDate() === Number(s.slice(8, 10));
+    const year = Number(s.slice(0, 4));
+    const month = Number(s.slice(5, 7)); // 1-12
+    const day = Number(s.slice(8, 10));
+    // Construct via UTC to avoid DST/TZ shifts, then verify components didn't overflow
+    const d = new Date(Date.UTC(year, month - 1, day));
+    return d.getUTCFullYear() === year && d.getUTCMonth() + 1 === month && d.getUTCDate() === day;
   },
   { message: 'Must be a date in YYYY-MM-DD format' },
 );
