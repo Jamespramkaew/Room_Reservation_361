@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Room Reservation facilities API on Lambda and API Gateway REST.
+
+Parameters:
+  PrivateSubnetIds:
+    Type: CommaDelimitedList
+    Description: Terraform private_subnet_ids output, comma-separated.
+  LambdaSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Description: Terraform lambda_security_group_id output.
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: Full PostgreSQL URL, including username, password, port, database name, and sslmode=require.
+  AllowedOrigins:
+    Type: String
+    Default: http://localhost:5173
+    Description: Comma-separated browser origins allowed by the API.
+  StageName:
+    Type: String
+    Default: dev
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Timeout: 15
+    MemorySize: 512
+    VpcConfig:
+      SubnetIds: !Ref PrivateSubnetIds
+      SecurityGroupIds:
+        - !Ref LambdaSecurityGroupId
+    Environment:
+      Variables:
+        STAGE: !Ref StageName
+        DATABASE_URL: !Ref DatabaseUrl
+        ALLOWED_ORIGINS: !Ref AllowedOrigins
+
+Resources:
+  FacilitiesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub roomres-${StageName}-api
+      StageName: !Ref StageName
+      EndpointConfiguration: REGIONAL
+
+  FacilitiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub roomres-facilities-${StageName}
+      CodeUri: dist/facilities/
+      Handler: index.handler
+      Description: Facilities CRUD API.
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambdaVPCAccessExecutionRole
+      Events:
+        FacilitiesCollection:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/facilities
+            Method: ANY
+        FacilitiesItems:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FacilitiesApi
+            Path: /api/facilities/{proxy+}
+            Method: ANY
+
+  # Copy this resource when adding another Lambda. Globals.Function already
+  # supplies the VPC config, runtime, timeout, memory, and shared environment.
+  # Replace the name, CodeUri, and API paths with the new function's values.
+  # ExampleFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub roomres-example-${StageName}
+  #     CodeUri: dist/example/
+  #     Handler: index.handler
+  #     Description: Example resource Lambda.
+  #     Policies:
+  #       - AWSLambdaBasicExecutionRole
+  #       - AWSLambdaVPCAccessExecutionRole
+  #     Events:
+  #       ExampleCollection:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref FacilitiesApi
+  #           Path: /api/example
+  #           Method: ANY
+  #       ExampleItems:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref FacilitiesApi
+  #           Path: /api/example/{proxy+}
+  #           Method: ANY
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL for the deployed REST API stage.
+    Value: !Sub https://${FacilitiesApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${StageName}
+  FacilitiesFunctionName:
+    Description: Deployed Lambda function name.
+    Value: !Ref FacilitiesFunction

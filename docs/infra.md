@@ -5,7 +5,7 @@
 ## สถานะปัจจุบัน
 
 - Terraform source อยู่ใน `infra/terraform/` และสร้าง VPC, private subnets, security groups และ RDS PostgreSQL 17
-- Lambda และ API Gateway จะจัดการด้วย AWS SAM ในขั้นถัดไป; Terraform ยังไม่สร้าง Lambda, API Gateway หรือ frontend
+- Lambda `facilities` และ API Gateway มีตัวอย่าง SAM template ที่ `backend-lambda/template.yaml`; Terraform ไม่ได้สร้าง Lambda, API Gateway หรือ frontend
 - S3 ยังไม่รวมใน Terraform รอบนี้ เพราะมี bucket อยู่แล้วและจะกำหนดค่าภายหลัง
 - ยังไม่มี Terraform config สำหรับ LocalStack ดังนั้นคำว่า local ในคู่มือนี้หมายถึง Docker Compose + LocalStack ไม่ใช่การ provision AWS resources ด้วย Terraform
 - Terraform และ local ใช้ PostgreSQL 17; ค่า minor version ที่ Terraform ตั้งไว้ต้องตรวจว่ามีให้บริการใน AWS region ที่เลือก
@@ -132,7 +132,28 @@ Pop-Location
 
 ให้ `apply` ทำโดยผู้รับผิดชอบ infrastructure หลังทีม review plan และตกลงเปลี่ยนแปลงแล้วเท่านั้น. ก่อน apply ต้องแน่ใจว่าใช้ workspace, account, region และตัวแปรชุดเดียวกับ shared environment; ห้ามเพื่อน apply เองเพียงเพื่อ refresh state หรือดูผล.
 
-หลัง Terraform apply ขั้นถัดไปคือสร้าง/ตั้งค่า SAM template (repository ยังไม่มี SAM template และยังไม่มีคำสั่ง SAM deploy ในตอนนี้). นำ `private_subnet_ids` และ `lambda_security_group_id` ไปใส่ใน `VpcConfig` ของ Lambda resources. RDS security group อนุญาต TCP 5432 จาก Lambda security group นี้เท่านั้น. Lambda execution role ต้องมี `AWSLambdaVPCAccessExecutionRole` หรือสิทธิ์จัดการ network interfaces ที่เทียบเท่า.
+หลัง Terraform apply ให้ใช้ outputs เป็น parameters ของ SAM template ที่ `backend-lambda/template.yaml`. Template มี function `facilities` พร้อม API Gateway REST routes สำหรับ `/api/facilities` และ `/api/facilities/{proxy+}`. เพื่อนสามารถใช้ template เดียวกันโดยกรอก outputs จาก Terraform ของ environment ตัวเอง.
+
+จาก PowerShell ให้ใช้ AWS profile และ region เดียวกับ Terraform แล้ว build/deploy:
+
+```powershell
+$env:AWS_PROFILE = "roomreserve"
+Set-Location backend-lambda
+npm install
+npm run build -- facilities
+sam validate --lint --template-file template.yaml
+sam deploy --guided --template-file template.yaml
+```
+
+ในขั้น `sam deploy --guided` ให้กรอกค่าพารามิเตอร์จาก Terraform outputs:
+
+- `PrivateSubnetIds`: ผล `terraform output -json private_subnet_ids` นำ JSON brackets/quotes ออก แล้วคั่น subnet IDs ด้วย comma
+- `LambdaSecurityGroupId`: ผล `terraform output -raw lambda_security_group_id`
+- `DatabaseUrl`: `postgresql://<db_username>:<db_password>@<rds_address>:<rds_port>/<rds_database_name>?sslmode=require`
+- `AllowedOrigins`: origin ของ frontend เช่น `https://<frontend-domain>`; สำหรับ local frontend ใช้ `http://localhost:5173`
+- `StageName`: ชื่อ stage เช่น `dev`
+
+SAM จะสร้าง Lambda execution role พร้อม `AWSLambdaVPCAccessExecutionRole`, API Gateway REST API และเชื่อม Lambda เข้า VPC ผ่าน `VpcConfig`. RDS security group อนุญาต TCP 5432 จาก Lambda security group นี้เท่านั้น. เก็บค่า `DatabaseUrl` เป็นความลับ; parameter ถูกกำหนด `NoEcho` ใน template แต่ค่านี้ยังอยู่ใน Lambda environment และ CloudFormation state. ถ้าใช้ `--guided` อย่าบันทึก DatabaseUrl ลง `samconfig.toml` หรือ commit ไฟล์ที่มี secret; production ควรย้ายรหัสผ่านไป AWS Secrets Manager. หลัง deploy ใช้ output `ApiBaseUrl` ของ CloudFormation stack แล้วทดสอบ `<ApiBaseUrl>/api/facilities` (template นี้ยังไม่มี health function).
 
 ตั้ง `DATABASE_URL` ของ Lambda จาก RDS outputs และรหัสผ่านที่ใช้ตอนสร้าง RDS:
 
@@ -140,7 +161,7 @@ Pop-Location
 postgresql://<db_username>:<db_password>@<rds_address>:<rds_port>/<rds_database_name>?sslmode=require
 ```
 
-ตรวจเวอร์ชัน PostgreSQL 17 ที่ AWS region รองรับก่อน apply; เปลี่ยน `db_engine_version` ใน tfvars หาก `17.4` ไม่มีให้บริการใน region นั้น. `terraform apply` สร้างเฉพาะ VPC/RDS; ยังไม่ deploy application และยังไม่สร้างหรือแก้ S3 bucket. อย่าใช้ `infra/scripts/deploy.sh` เป็น AWS SAM deployment.
+ตรวจเวอร์ชัน PostgreSQL 17 ที่ AWS region รองรับก่อน apply; เปลี่ยน `db_engine_version` ใน tfvars หากรุ่นที่กำหนดไม่มีให้บริการใน region นั้น. `terraform apply` สร้างเฉพาะ VPC/RDS; SAM deploy สร้าง Lambda/API Gateway แยกต่างหาก และยังไม่สร้างหรือแก้ S3 bucket. อย่าใช้ `infra/scripts/deploy.sh` เป็น AWS SAM deployment.
 
 เมื่อต้องการลบ environment ทดลอง ให้ตรวจ resource และผลกระทบก่อน แล้วสั่ง `terraform destroy` จาก directory เดียวกับ module. คำสั่งนี้ลบ RDS และข้อมูลในนั้นด้วย; export/สำรองข้อมูลที่ต้องเก็บก่อนเสมอ.
 

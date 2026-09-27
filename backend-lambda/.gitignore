@@ -3,6 +3,8 @@ node_modules/
 
 # Build output
 dist/
+.aws-sam/
+samconfig.toml
 *.js.map
 
 # Environment
