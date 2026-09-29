@@ -84,3 +84,32 @@ curl https://<api-id>.execute-api.ap-southeast-1.amazonaws.com/dev/api/health
 ```
 
 `infra/env/aws.env` ถูก gitignore ไว้เพราะมีรหัสผ่าน DB
+
+### Deploy ด้วย SAM (stack `roomreserve` ที่ใช้อยู่ตอนนี้)
+
+API บน AWS ตอนนี้ deploy ด้วย `template.yaml` เป็น stack `roomreserve` ใน us-east-1
+**อย่าใช้ `npm run deploy:aws` / `npm run migrate:aws` กับ stack นี้** เพราะสคริปต์ตั้งชื่อ function ไม่มี `-dev` ต่อท้าย จะได้ Lambda ซ้ำเป็นสองชุด
+
+อัปเดตโค้ด:
+
+```bash
+npm run build
+sam deploy --template-file template.yaml --stack-name roomreserve --region us-east-1 \
+  --resolve-s3 --capabilities CAPABILITY_IAM --confirm-changeset
+```
+
+- ไม่ต้องใส่ `--parameter-overrides` เพราะ SAM จะใช้ค่าเดิมของ stack (subnet, SG, `DatabaseUrl`)
+- ห้ามใช้ `--guided` เพราะจะเขียน `DatabaseUrl` ที่มีรหัสผ่านลง `samconfig.toml`
+- อ่าน changeset ก่อนตอบ `y`: ควรมีแค่ `Modify` + `Replacement: False`
+
+Migrate / seed (RDS รับเฉพาะ Lambda เลยต้องสั่งผ่าน `roomres-migrate-dev`):
+
+```bash
+# migrations อย่างเดียว
+aws lambda invoke --region us-east-1 --function-name roomres-migrate-dev \
+  --cli-binary-format raw-in-base64-out --payload '{}' out.json && cat out.json
+
+# migrations แล้วใส่ข้อมูลตัวอย่าง (รันซ้ำได้ ไม่ใส่ข้อมูลซ้ำ)
+aws lambda invoke --region us-east-1 --function-name roomres-migrate-dev \
+  --cli-binary-format raw-in-base64-out --payload '{"seed": true}' out.json && cat out.json
+```

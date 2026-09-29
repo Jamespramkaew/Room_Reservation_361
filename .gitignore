@@ -3,3 +3,10 @@
 .env.local
 volume/
 infra/env/aws.env
+
+# Terraform source lives in infra/terraform; ignore only generated state/cache/secrets.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars

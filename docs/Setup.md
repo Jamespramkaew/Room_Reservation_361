@@ -49,6 +49,7 @@ cd backend-lambda
 npm install # เคยลงตอน Node 18 หรือลงจากฝั่ง Windows ให้ rm -rf node_modules ก่อน
 npm run db:migrate # สร้างตาราง
 npm run db:seed # ข้อมูลตัวอย่าง (rooms, facilities, bookings)
+docker compose up -d
 npm run photos:local #photo seed to S3
 
 cd ../frontend && npm install
