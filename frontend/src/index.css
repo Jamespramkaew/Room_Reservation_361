@@ -178,3 +178,28 @@ body {
     text-align: center !important;
   }
 }
+/* Room schedule: week grid on desktop, day chips + agenda on phones */
+.room-schedule-agenda {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .room-schedule-grid {
+    display: none !important;
+  }
+
+  .room-schedule-agenda {
+    display: block;
+  }
+
+  .room-schedule {
+    margin-top: 18px !important;
+    padding: 16px !important;
+    border-radius: 10px !important;
+  }
+
+  .room-schedule-head {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}
