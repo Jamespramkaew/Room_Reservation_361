@@ -95,4 +95,10 @@ export const deleteRequest = async <T = any>(
   }
 }
 
+// Export service modules
+export { roomsService } from './roomsService'
+export { bookingsService } from './bookingsService'
+export { facilitiesService } from './facilitiesService'
+export { healthService } from './healthService'
+
 

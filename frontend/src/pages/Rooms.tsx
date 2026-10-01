@@ -1,14 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { useNavigate } from 'react-router-dom'
 import RoomCard from '../components/RoomCard'
 import SearchFilter from '../components/SearchFilter'
 import EmptyState from '../components/EmptyState'
-import { rooms as allRooms } from '../data/rooms'
+import { useApi } from '../hooks/useApi'
+import { roomsService } from '../services/roomsService'
+import { mapRoomFromApi, ROOM_TYPE_REVERSE_MAP } from '../types/room'
 import type { Room } from '../types/room'
 
-// Map equipment filter label → which room field to check
-const EQUIPMENT_FIELD_MAP: Record<string, keyof Room> = {
+// Map equipment filter label → API facility key
+const EQUIPMENT_API_MAP: Record<string, string> = {
   'คอมพิวเตอร์': 'computers',
   'โปรเจกเตอร์': 'projector',
   'ไมโครโฟน': 'mic',
@@ -20,21 +22,49 @@ export default function Rooms() {
   const [type, setType] = useState('')
   const [equipment, setEquipment] = useState('')
 
-  const rooms = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    const equipField = equipment ? EQUIPMENT_FIELD_MAP[equipment] : null
-    return allRooms
-      .filter((r) => !q || r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q))
-      .filter((r) => !type || r.type === type)
-      .filter((r) => {
-        if (!equipField) return true
-        const val = r[equipField]
-        return val != null && (val as number) > 0
-      })
+  // Build API search params
+  const searchParams = useMemo(() => {
+    const params: Record<string, string> = {}
+    if (query.trim()) params.q = query.trim()
+    if (type) params.room_type = ROOM_TYPE_REVERSE_MAP[type] || type
+    if (equipment) params.facilities = EQUIPMENT_API_MAP[equipment] || equipment
+    return params
   }, [query, type, equipment])
+
+  // Fetch rooms from API
+  const { data: apiRooms, loading, error, execute } = useApi(() => 
+    roomsService.getAllRooms(searchParams)
+  )
+
+  // Execute search whenever params change
+  useEffect(() => {
+    execute()
+  }, [execute, searchParams])
+
+  // Map API response to UI format
+  const rooms = useMemo(() => {
+    if (!apiRooms) return []
+    return apiRooms.map(mapRoomFromApi)
+  }, [apiRooms])
 
   const handleOpenRoom = (room: Room) => {
     navigate(`/rooms/${room.id}`)
+  }
+
+  if (loading) {
+    return (
+      <main className="rooms-page" style={styles.main}>
+        <div style={styles.loading}>กำลังโหลดข้อมูล...</div>
+      </main>
+    )
+  }
+
+  if (error) {
+    return (
+      <main className="rooms-page" style={styles.main}>
+        <div style={styles.error}>เกิดข้อผิดพลาด: {error}</div>
+      </main>
+    )
   }
 
   return (
@@ -65,5 +95,21 @@ const styles: Record<string, CSSProperties> = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: 32,
+  },
+  loading: {
+    maxWidth: 1240,
+    margin: '0 auto',
+    textAlign: 'center',
+    padding: '80px 0',
+    fontSize: 18,
+    color: '#6b6b6b',
+  },
+  error: {
+    maxWidth: 1240,
+    margin: '0 auto',
+    textAlign: 'center',
+    padding: '80px 0',
+    fontSize: 18,
+    color: '#ef4444',
   },
 }

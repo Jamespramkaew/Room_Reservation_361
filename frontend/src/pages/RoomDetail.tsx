@@ -1,23 +1,50 @@
+import { useEffect } from 'react'
 import type { CSSProperties } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import RoomGallery from '../components/RoomGallery'
 import EquipmentBar from '../components/EquipmentBar'
 import BookingRules from '../components/BookingRules'
-import { rooms } from '../data/rooms'
+import { useApi } from '../hooks/useApi'
+import { roomsService } from '../services/roomsService'
+import { mapRoomFromApi } from '../types/room'
 import monitorIcon from '../assets/icon-mornitor.png'
 
 export default function RoomDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const room = rooms.find((r) => r.id === id)
+  
+  // Fetch room details from API
+  const { data: apiRoom, loading, error, execute } = useApi(() => 
+    roomsService.getRoomById(id!)
+  )
 
-  if (!room) {
+  useEffect(() => {
+    if (id) {
+      execute()
+    }
+  }, [id, execute])
+
+  if (loading) {
     return (
-      <main style={styles.notFound}>
-        <p>ไม่พบห้องที่ต้องการ</p>
+      <main style={styles.loading}>
+        <p>กำลังโหลดข้อมูล...</p>
       </main>
     )
   }
+
+  if (error || !apiRoom) {
+    return (
+      <main style={styles.notFound}>
+        <p>ไม่พบห้องที่ต้องการ</p>
+        <button onClick={() => navigate('/rooms')} style={styles.backButton}>
+          กลับไปหน้าห้อง
+        </button>
+      </main>
+    )
+  }
+
+  // Map API response to UI format
+  const room = mapRoomFromApi(apiRoom)
 
   return (
     <main className="room-detail-page" style={styles.main}>
@@ -41,7 +68,7 @@ export default function RoomDetail() {
         </button>
 
         <div className="room-detail-card" style={styles.card}>
-          <RoomGallery images={room.images} alt={room.name} />
+          <RoomGallery images={room.images || [room.image || '']} alt={room.name} />
 
           <div className="room-detail-head" style={styles.headRow}>
             <div style={styles.titleCol}>
@@ -69,6 +96,7 @@ export default function RoomDetail() {
 
 const styles: Record<string, CSSProperties> = {
   main: { padding: '32px 40px 80px' },
+  loading: { padding: '80px 40px', textAlign: 'center', color: '#6b6b6b' },
   notFound: { padding: '80px 40px', textAlign: 'center', color: '#6b6b6b' },
   container: { maxWidth: 1240, margin: '0 auto' },
   back: {
@@ -84,6 +112,17 @@ const styles: Record<string, CSSProperties> = {
     color: '#1a1a1a',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+  },
+  backButton: {
+    marginTop: 20,
+    padding: '10px 20px',
+    background: '#111111',
+    color: '#ffffff',
+    border: 'none',
+    borderRadius: 8,
+    fontSize: 15,
+    fontWeight: 600,
+    cursor: 'pointer',
   },
   card: {
     background: '#ffffff',
