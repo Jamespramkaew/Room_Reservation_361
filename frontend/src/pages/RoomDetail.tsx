@@ -1,23 +1,44 @@
 import type { CSSProperties } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import RoomGallery from '../components/RoomGallery'
 import EquipmentBar from '../components/EquipmentBar'
 import BookingRules from '../components/BookingRules'
-import { rooms } from '../data/rooms'
+import RoomSchedule from '../components/RoomSchedule'
+import { useAsync } from '../hooks/useAsync'
+import { getRoom } from '../services/rooms'
 import monitorIcon from '../assets/icon-mornitor.png'
 
-export default function RoomDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const room = rooms.find((r) => r.id === id)
+const STATUS_TAG: Record<string, { label: string; color: string }> = {
+  AVAILABLE: { label: 'Available', color: '#22C55E' },
+  MAINTENANCE: { label: 'ปิดปรับปรุง', color: '#EF4444' },
+  RESERVED: { label: 'Reserved', color: '#F59E0B' },
+}
 
-  if (!room) {
+export default function RoomDetail() {
+  const { id = '' } = useParams()
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { data: room, error, loading } = useAsync(id, () => getRoom(id))
+
+  if (loading) {
+    return (
+      <main className="room-detail-page" style={styles.main}>
+        <div style={styles.container}>
+          <div style={{ ...styles.card, height: 520, background: '#EDEDED', boxShadow: 'none' }} />
+        </div>
+      </main>
+    )
+  }
+
+  if (error || !room) {
     return (
       <main style={styles.notFound}>
         <p>ไม่พบห้องที่ต้องการ</p>
       </main>
     )
   }
+
+  const status = STATUS_TAG[room.status] ?? { label: room.status, color: '#6b6b6b' }
 
   return (
     <main className="room-detail-page" style={styles.main}>
@@ -54,12 +75,20 @@ export default function RoomDetail() {
                 <span style={styles.capacityText}>Seat: </span>
                 <span style={styles.capacityValue}>{room.seats ?? 0}</span>
               </span>
-              <span className="room-detail-status" style={styles.statusTag}>{room.status}</span>
+              <span className="room-detail-status" style={{ ...styles.statusTag, background: status.color }}>
+                {status.label}
+              </span>
             </div>
           </div>
 
           <EquipmentBar room={room} />
         </div>
+
+        <RoomSchedule
+          roomId={room.id}
+          closed={room.status !== 'AVAILABLE'}
+          focusDate={searchParams.get('date') ?? undefined}
+        />
 
         <BookingRules />
       </div>

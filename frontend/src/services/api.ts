@@ -31,6 +31,19 @@ export const get = async <T = any>(
 }
 
 /**
+ * GET from the backend and unwrap its { success, message, data } envelope.
+ * Throws with the backend message (joined if it is a list of validation errors).
+ */
+export const getData = async <T,>(url: string, params?: Record<string, string>): Promise<T> => {
+  const res = await get<{ success: boolean; message: string | string[]; data: T }>(url, { params })
+  if (!res.success || !res.data) {
+    const error: unknown = res.error
+    throw new Error((Array.isArray(error) ? error.join(', ') : String(error ?? '')) || 'Request failed')
+  }
+  return res.data.data
+}
+
+/**
  * Generic POST request
  */
 export const post = async <T = any>(
